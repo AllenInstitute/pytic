@@ -25,61 +25,66 @@ class tic_handle(Structure):
                 ('cached_firmware_version_string', c_char_p)]
 
 usblib = windll.LoadLibrary("C:\\msys64\\mingw64\\bin\\libusbp-1.dll")
-# ticlib = windll.LoadLibrary("C:\\msys64\\mingw64\\bin\\libpololu-tic-1.dll")
-ticlib = windll.LoadLibrary(r"C:\Users\danc\dev\tic\build\libpololu-tic-1.dll")
+ticlib = windll.LoadLibrary("C:\\Users\\danc\\dev\\tic\\build\\libpololu-tic-1.dll")
 
-# print("---------------------------------")
-# print(ticlib.please_work_now())
-# print("---------------------------------")
-
-devcnt = c_size_t(0)
-t = pointer(c_long())
-
-ticlib.pytic_list_connected_devices.restype=tic_device
-ticdev = ticlib.pytic_list_connected_devices(t, byref(devcnt))
-print(ticdev)
-print(ticdev.usb_interface)
+print("\nFind Connected Tic Device")
+devcnt = devcnt = c_size_t(0)
+dev_pp = POINTER(POINTER(tic_device))()
+ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
+ticdev = dev_pp[0][0]
 print(ticdev.serial_number)
-print(ticdev.os_id)
-print(ticdev.firmware_version)
-print(ticdev.product)
 
-usbint = cast(ticdev.usb_interface, POINTER(libusbp_generic_interface))
-print(usbint.contents.interface_number)
-print(usbint.contents.device_instance_id)
-print(usbint.contents.filename)
+print("\nGet Tic Device Handle")
+t_handle_p = POINTER(tic_handle)()
+print(ticlib.tic_handle_open(byref(ticdev), byref(t_handle_p)))
+t_handle = t_handle_p[0]
 
-h_temp = pointer(c_long())
+print("\nRunning Motion Commands...")
+print(ticlib.tic_exit_safe_start(byref(t_handle)))
+print(ticlib.tic_energize(byref(t_handle)))
+print(ticlib.tic_set_max_speed(byref(t_handle), c_int(6000000)))
+print(ticlib.tic_set_target_velocity(byref(t_handle), c_int(5000000)))
+print(ticlib.tic_halt_and_set_position(byref(t_handle), c_int(0)))
+print(ticlib.tic_set_target_position(byref(t_handle), c_int(999999999999999999)))
+print(ticlib.tic_reinitialize(byref(t_handle)))
 
-
-print("here------------------")
-ticlib.pytic_handle_open.restype=tic_handle
-h = ticlib.pytic_handle_open(byref(ticdev), h_temp)
-print(h)
-print(h.usb_handle)
-print(h.device)
-print("here------------------")
-
-chk = cast(h.device, POINTER(tic_device))
-print(chk.contents.os_id)
-
-# ticlib.tic_energize.argtypes = [POINTER(tic_handle)]
-print(ticlib.tic_exit_safe_start(byref(h)))
-print(ticlib.tic_energize(byref(h)))
-print(ticlib.tic_set_max_speed(byref(h), c_int(6000000)))
-print(ticlib.tic_set_target_velocity(byref(h), c_int(5000000)))
-print(ticlib.tic_halt_and_set_position(byref(h), c_int(0)))
-print(ticlib.tic_set_target_position(byref(h), c_int(999999999999999999)))
-print(ticlib.tic_reinitialize(byref(h)))
-
+# INTERNAL DEVICE CASTING, USEFUL LATER
+# devchk = cast(handle_p[0].device, POINTER(tic_device))
+# print(devchk.contents.serial_number)
+# print(newtic.serial_number)
+# print(pp)
+# print(pp[0][0].serial_number)
 # print(ticlib.tic_deenergize(byref(h)))
-
-
 # print(ticlib.tic_set_target_velocity(byref(h),c_int(500)))
 
+# HACKED VERSION OF CODE, REQUIRES MODIFIED SOURCE
+# devcnt = c_size_t(0)
+# t = pointer(c_long())
 
+# ticlib.pytic_list_connected_devices.restype=tic_device
+# ticdev = ticlib.pytic_list_connected_devices(t, byref(devcnt))
+# print(ticdev)
+# print(ticdev.usb_interface)
+# print(ticdev.serial_number)
+# print(ticdev.os_id)
+# print(ticdev.firmware_version)
+# print(ticdev.product)
 
+# usbint = cast(ticdev.usb_interface, POINTER(libusbp_generic_interface))
+# print(usbint.contents.interface_number)
+# print(usbint.contents.device_instance_id)
+# print(usbint.contents.filename)
 
+# h_temp = pointer(c_long())
+
+# ticlib.pytic_handle_open.restype=tic_handle
+# h = ticlib.pytic_handle_open(byref(ticdev), h_temp)
+# print(h)
+# print(h.usb_handle)
+# print(h.device)
+
+# chk = cast(h.device, POINTER(tic_device))
+# print(chk.contents.os_id)
 
 
 
