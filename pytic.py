@@ -40,8 +40,13 @@ print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_ST
 print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(500000000)))
 print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(50000000)))
 print(ticlib.tic_settings_set_current_limit(byref(settings), c_uint32(960)))
-# Pin Settings
-
+# Pin Settings - make RX digitial input pin
+print(ticlib.tic_settings_set_pin_func(byref(settings),
+    t_const['TIC_PIN_NUM_RX'],t_const['TIC_PIN_FUNC_USER_INPUT']))
+print(ticlib.tic_settings_set_pin_pullup(byref(settings), 
+    t_const['TIC_PIN_NUM_RX'], c_bool(True)))
+print(ticlib.tic_settings_set_pin_analog(byref(settings), 
+    t_const['TIC_PIN_NUM_RX'], c_bool(False))) 
 # Apply Settings
 print(ticlib.tic_settings_fix(byref(settings),warnings_p))
 if bool(warnings_p):
@@ -73,12 +78,39 @@ print(variables.product)
 print(variables.error_status)
 print(variables.errors_occurred)
 
+e_bit_mask = variables.error_status
+ecodes = [
+    "TIC_ERROR_INTENTIONALLY_DEENERGIZED",
+    "TIC_ERROR_MOTOR_DRIVER_ERROR",
+    "TIC_ERROR_LOW_VIN",
+    "TIC_ERROR_KILL_SWITCH",
+    "TIC_ERROR_REQUIRED_INPUT_INVALID",
+    "TIC_ERROR_SERIAL_ERROR",
+    "TIC_ERROR_COMMAND_TIMEOUT",
+    "TIC_ERROR_SAFE_START_VIOLATION",
+    "TIC_ERROR_ERR_LINE_HIGH",
+    "TIC_ERROR_SERIAL_FRAMING",
+    "TIC_ERROR_SERIAL_RX_OVERRUN",
+    "TIC_ERROR_SERIAL_FORMAT",
+    "TIC_ERROR_SERIAL_CRC",
+    "TIC_ERROR_ENCODER_SKIP"]
+for code in ecodes:
+    if (e_bit_mask & t_const[code]) == t_const[code]:
+        print("Error: " + code)
+
+
 # BIT MASK REQUIRED TO GET ERROR INFO FOR VARIABLE STATE
 # errors_p = pointer(variables.errors_occurred)
 # print(ticlib.tic_error_get_message(errors_p))
 print(ticlib.tic_deenergize(byref(t_handle)))
 
-
+# Pin Reading Demo
+for i in range(0,3):
+    variables_p = POINTER(tic_variables)()
+    print(ticlib.tic_get_variables(byref(t_handle), byref(variables_p),c_bool(True)))
+    variables = variables_p[0]
+    print(ticlib.tic_variables_get_digital_reading(byref(variables),t_const['TIC_PIN_NUM_RX']))
+    sleep(1)
 # INTERNAL DEVICE CASTING, USEFUL LATER
 # devchk = cast(handle_p[0].device, POINTER(tic_device))
 # print(devchk.contents.serial_number)
