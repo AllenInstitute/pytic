@@ -1,98 +1,21 @@
 '''
-Define tic_settings structure next, then test planning mode for contant velocity operation
+PyTic - Python Interface for Pololu Tic Stepper Motor Controllers
+Author: Daniel Castelli
+Date: 6/18/2018
+Version: 0.0.1
 '''
 
+import sys
 from ctypes import *
 from time import sleep
-
-T_CONST = {'TIC_CONTROL_PIN_COUNT': 5}
-
-TIC_CONTROL_PIN_COUNT = 5
-TIC_PRODUCT_T825 = 1
-TIC_RESPONSE_GO_TO_POSITION = 3
-TIC_STEP_MODE_MICROSTEP8 = 3
-
-class libusbp_generic_interface(Structure):
-    _fields_ = [("interface_number", c_uint8),
-                ("device_instance_id", c_char_p),
-                ("filename", c_char_p)]
-
-class libusbp_generic_handle(Structure):
-    # untested type, no HANDLE or WIN_INTERFACE_HANDLE type
-    _fields_ = [("file_handle", c_ulong),
-                ("winusb_handle", c_ulong)]
-
-class tic_device(Structure):
-    _fields_ = [("usb_interface", POINTER(libusbp_generic_interface)),
-                ("serial_number", c_char_p),
-                ("os_id", c_char_p),
-                ("firmware_version", c_uint16),
-                ("product", c_uint8)]
-
-class tic_handle(Structure):
-    _fields_ = [('usb_handle', POINTER(libusbp_generic_handle)),
-                ('device', POINTER(tic_device)),
-                ('cached_firmware_version_string', c_char_p)]
-
-class pin_settings(Structure):
-    _fields_ = [('func', c_uint8),
-                ('pullup', c_bool),
-                ('analog', c_bool),
-                ('polarity', c_bool)];
-
-class tic_settings(Structure):
-    _fields_ = [('product', c_uint8),
-                ('control_mode', c_uint8),
-                ('never_sleep', c_bool),
-                ('disable_safe_start', c_bool),
-                ('ignore_err_line_high', c_bool),
-                ('auto_clear_driver_error', c_bool),
-                ('soft_error_response', c_uint8),
-                ('soft_error_position', c_int32),
-                ('serial_baud_rate', c_uint32),
-                ('serial_device_number', c_uint8),
-                ('command_timeout', c_uint16),
-                ('serial_crc_enabled', c_bool),
-                ('serial_response_delay', c_uint8),
-                ('low_vin_timeout', c_uint16),
-                ('low_vin_shutoff_voltage', c_uint16),
-                ('low_vin_startup_voltage', c_uint16),
-                ('high_vin_shutoff_voltage', c_uint16),
-                ('vin_calibration', c_int16),
-                ('rc_max_pulse_period', c_uint16),
-                ('rc_bad_signal_timeout', c_uint16),
-                ('rc_consecutive_good_pulses', c_uint8),
-                ('input_averaging_enabled', c_uint8),
-                ('input_hysteresis', c_uint16),
-                ('input_error_min', c_uint16),
-                ('input_error_max', c_uint16),
-                ('input_scaling_degree', c_uint8),
-                ('input_invert', c_bool),
-                ('input_min', c_uint16),
-                ('input_neutral_min', c_uint16),
-                ('input_neutral_max', c_uint16),
-                ('input_max', c_uint16),
-                ('output_min', c_int32),
-                ('output_max', c_int32),
-                ('encoder_prescaler', c_uint32),
-                ('encoder_postscaler', c_uint32),
-                ('encoder_unlimited', c_bool),
-                ('pin_settings', pin_settings * TIC_CONTROL_PIN_COUNT),
-                ('current_limit', c_uint32),
-                ('current_limit_during_error', c_int32),
-                ('step_mode', c_uint8),
-                ('decay_mode', c_int8),
-                ('starting_speed', c_uint32),
-                ('max_speed', c_uint32),
-                ('max_decel', c_uint32),
-                ('max_accel', c_uint32),
-                ('invert_motor_direction', c_bool)]
+from pytic_protocol import tic_constant as t_const
+from pytic_structures import *
 
 usblib = windll.LoadLibrary("C:\\Users\\danc\\dev\\libusbp\\build\\libusbp-1.dll")
 ticlib = windll.LoadLibrary("C:\\Users\\danc\\dev\\tic\\build\\libpololu-tic-1.dll")
 
 print("\nFind Connected Tic Device")
-devcnt = devcnt = c_size_t(0)
+devcnt = c_size_t(0)
 dev_pp = POINTER(POINTER(tic_device))()
 ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
 ticdev = dev_pp[0][0]
@@ -105,28 +28,54 @@ t_handle = t_handle_p[0]
 
 print("\nSettings related...")
 # CODE FUNCTIONAL, BUT BURNS EEPROM, DON'T RUN EVERYTIME
-# settings_p = POINTER(tic_settings)()
-# print(ticlib.tic_settings_create(byref(settings_p)))
-# settings = settings_p[0]
-# print(ticlib.tic_settings_set_product(byref(settings),c_uint8(TIC_PRODUCT_T825)))
-# print(ticlib.tic_settings_fill_with_defaults(byref(settings)))
-# print(ticlib.tic_settings_set_command_timeout(byref(settings), c_uint16(0)))
-# print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(TIC_STEP_MODE_MICROSTEP8)))
+settings_p = POINTER(tic_settings)()
+warnings_p = POINTER(c_char_p)()
+print(ticlib.tic_settings_create(byref(settings_p)))
+settings = settings_p[0]
+# Default Settings - must set product first
+print(ticlib.tic_settings_set_product(byref(settings),c_uint8(t_const['TIC_PRODUCT_T825'])))
+print(ticlib.tic_settings_fill_with_defaults(byref(settings)))
+# Motion Settings
+print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP8'])))
+print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(500000000)))
+print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(50000000)))
+print(ticlib.tic_settings_set_current_limit(byref(settings), c_uint32(960)))
+# Pin Settings
+
+# Apply Settings
+print(ticlib.tic_settings_fix(byref(settings),warnings_p))
+if bool(warnings_p):
+    for warning in warnings_p:
+        print(warning)
+        sys.exit()
+print(ticlib.tic_set_settings(byref(t_handle), byref(settings)))
+print(ticlib.tic_reinitialize(byref(t_handle)))
 
 print("\nRunning Motion Commands...")
 print(ticlib.tic_exit_safe_start(byref(t_handle)))
 print(ticlib.tic_energize(byref(t_handle)))
-print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(1000000)))
-print(ticlib.tic_set_max_accel(byref(t_handle), c_uint32(6000000)))
+print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(500000000)))
+print(ticlib.tic_set_max_accel(byref(t_handle), c_uint32(50000000)))
 print(ticlib.tic_halt_and_set_position(byref(t_handle), c_int32(0)))
 print(ticlib.tic_reinitialize(byref(t_handle)))
 #print(ticlib.tic_reset_command_timeout(byref(t_handle)))
 #print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1650)))
-print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1597*6)))
+# print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1597*6)))
+print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1567)))
 #print(ticlib.tic_set_target_velocity(byref(t_handle), c_int32(1000000)))
 
 sleep(3)
 
+variables_p = POINTER(tic_variables)()
+print(ticlib.tic_get_variables(byref(t_handle), byref(variables_p),c_bool(True)))
+variables = variables_p[0]
+print(variables.product)
+print(variables.error_status)
+print(variables.errors_occurred)
+
+# BIT MASK REQUIRED TO GET ERROR INFO FOR VARIABLE STATE
+# errors_p = pointer(variables.errors_occurred)
+# print(ticlib.tic_error_get_message(errors_p))
 print(ticlib.tic_deenergize(byref(t_handle)))
 
 
