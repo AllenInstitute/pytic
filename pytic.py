@@ -35,10 +35,14 @@ settings = settings_p[0]
 # Default Settings - must set product first
 print(ticlib.tic_settings_set_product(byref(settings),c_uint8(t_const['TIC_PRODUCT_T825'])))
 print(ticlib.tic_settings_fill_with_defaults(byref(settings)))
-# Motion Settings
-print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP8'])))
-print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(500000000)))
-print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(50000000)))
+print(ticlib.tic_settings_set_ignore_err_line_high(byref(settings),c_bool(True)))
+print(ticlib.tic_settings_set_serial_crc_enabled(byref(settings),c_bool(False)))
+# print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP8'])))
+# print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(60000000)))
+# print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(50000000)))
+print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP16'])))
+print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(120000000)))
+print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(90000000)))
 print(ticlib.tic_settings_set_current_limit(byref(settings), c_uint32(960)))
 # Pin Settings - make RX digitial input pin
 print(ticlib.tic_settings_set_pin_func(byref(settings),
@@ -59,14 +63,16 @@ print(ticlib.tic_reinitialize(byref(t_handle)))
 print("\nRunning Motion Commands...")
 print(ticlib.tic_exit_safe_start(byref(t_handle)))
 print(ticlib.tic_energize(byref(t_handle)))
-print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(500000000)))
-print(ticlib.tic_set_max_accel(byref(t_handle), c_uint32(50000000)))
+# print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(500000000)))
+# print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(10000)))
+# print(ticlib.tic_set_max_accel(byref(t_handle), c_uint32(50000000)))
 print(ticlib.tic_halt_and_set_position(byref(t_handle), c_int32(0)))
 print(ticlib.tic_reinitialize(byref(t_handle)))
 #print(ticlib.tic_reset_command_timeout(byref(t_handle)))
 #print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1650)))
 # print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1597*6)))
-print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1567)))
+print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1597)))
+print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1597*2)))
 #print(ticlib.tic_set_target_velocity(byref(t_handle), c_int32(1000000)))
 
 sleep(3)
@@ -78,7 +84,7 @@ print(variables.product)
 print(variables.error_status)
 print(variables.errors_occurred)
 
-e_bit_mask = variables.error_status
+e_bit_mask = variables.errors_occurred
 ecodes = [
     "TIC_ERROR_INTENTIONALLY_DEENERGIZED",
     "TIC_ERROR_MOTOR_DRIVER_ERROR",
@@ -94,6 +100,9 @@ ecodes = [
     "TIC_ERROR_SERIAL_FORMAT",
     "TIC_ERROR_SERIAL_CRC",
     "TIC_ERROR_ENCODER_SKIP"]
+
+print('e:{0:b}'.format(e_bit_mask))
+print('c:{0:b}'.format(t_const['TIC_ERROR_SERIAL_RX_OVERRUN']))
 for code in ecodes:
     if (e_bit_mask & t_const[code]) == t_const[code]:
         print("Error: " + code)
@@ -102,6 +111,9 @@ for code in ecodes:
 # BIT MASK REQUIRED TO GET ERROR INFO FOR VARIABLE STATE
 # errors_p = pointer(variables.errors_occurred)
 # print(ticlib.tic_error_get_message(errors_p))
+
+# Close down motor
+print(ticlib.tic_clear_driver_error(byref(t_handle)))
 print(ticlib.tic_deenergize(byref(t_handle)))
 
 # Pin Reading Demo
@@ -111,6 +123,9 @@ for i in range(0,3):
     variables = variables_p[0]
     print(ticlib.tic_variables_get_digital_reading(byref(variables),t_const['TIC_PIN_NUM_RX']))
     sleep(1)
+
+#print(ticlib.tic_reset(byref(t_handle)))
+
 # INTERNAL DEVICE CASTING, USEFUL LATER
 # devchk = cast(handle_p[0].device, POINTER(tic_device))
 # print(devchk.contents.serial_number)
