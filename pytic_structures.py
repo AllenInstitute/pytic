@@ -113,3 +113,9 @@ class tic_variables(Structure):
                 ('input_after_hysteresis', c_uint16),
                 ('input_after_scaling', c_int32),
                 ('pin_info', pin_info * t_const['TIC_CONTROL_PIN_COUNT'])]
+
+class tic_error(Structure):
+    _fields_ = [('do_not_free', c_bool),
+                ('message', c_char_p),
+                ('code_count', c_size_t),
+                ('code_array', POINTER(c_uint32))]
