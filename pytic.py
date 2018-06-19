@@ -17,7 +17,6 @@ from pytic_structures import *
 usblib = windll.LoadLibrary("C:\\Users\\danc\\dev\\libusbp\\build\\libusbp-1.dll")
 ticlib = windll.LoadLibrary("C:\\Users\\danc\\dev\\tic\\build\\libpololu-tic-1.dll")
 
-
 # CONNECT TO DEVICE
 print("\nFind Connected Tic Device")
 devcnt = c_size_t(0)
