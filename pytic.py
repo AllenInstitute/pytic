@@ -17,6 +17,8 @@ from pytic_structures import *
 usblib = windll.LoadLibrary("C:\\Users\\danc\\dev\\libusbp\\build\\libusbp-1.dll")
 ticlib = windll.LoadLibrary("C:\\Users\\danc\\dev\\tic\\build\\libpololu-tic-1.dll")
 
+
+# CONNECT TO DEVICE
 print("\nFind Connected Tic Device")
 devcnt = c_size_t(0)
 dev_pp = POINTER(POINTER(tic_device))()
@@ -37,17 +39,34 @@ print(ticlib.tic_settings_create(byref(settings_p)))
 settings = settings_p[0]
 # Default Settings - must set product first
 print(ticlib.tic_settings_set_product(byref(settings),c_uint8(t_const['TIC_PRODUCT_T825'])))
-print('here')
 print(ticlib.tic_settings_fill_with_defaults(byref(settings)))
+print(ticlib.tic_settings_set_auto_clear_driver_error(byref(settings), c_bool(True)))
 print(ticlib.tic_settings_set_ignore_err_line_high(byref(settings),c_bool(True)))
 print(ticlib.tic_settings_set_serial_crc_enabled(byref(settings),c_bool(False)))
-# print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP8'])))
-# print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(60000000)))
-# print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(50000000)))
-print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP16'])))
-print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(120000000)))
-print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(90000000)))
-print(ticlib.tic_settings_set_current_limit(byref(settings), c_uint32(960)))
+print(ticlib.tic_settings_set_serial_crc_enabled(byref(settings),c_bool(False)))
+print(ticlib.tic_settings_set_command_timeout(byref(settings),c_uint16(0)))
+
+# Home Settings
+# print(ticlib.tic_settings_set_decay_mode(byref(settings),c_uint8(t_const['TIC_DECAY_MODE_T825_SLOW'])))
+# print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_FULL'])))
+# print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(9000000)))
+# print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(3000000)))
+# print(ticlib.tic_settings_set_max_decel(byref(settings), c_uint32(3000000)))
+
+# Normal Settings
+print(ticlib.tic_settings_set_decay_mode(byref(settings),c_uint8(t_const['TIC_DECAY_MODE_T825_MIXED'])))
+print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP8'])))
+print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(60000000)))
+print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(50000000)))
+print(ticlib.tic_settings_set_max_decel(byref(settings), c_uint32(50000000)))
+
+# Precision Settings
+# print(ticlib.tic_settings_set_decay_mode(byref(settings),c_uint8(t_const['TIC_DECAY_MODE_T825_MIXED'])))
+# print(ticlib.tic_settings_set_step_mode(byref(settings), c_uint8(t_const['TIC_STEP_MODE_MICROSTEP16'])))
+# print(ticlib.tic_settings_set_max_speed(byref(settings), c_uint32(120000000)))
+# print(ticlib.tic_settings_set_max_accel(byref(settings), c_uint32(90000000)))
+# print(ticlib.tic_settings_set_max_decel(byref(settings), c_uint32(90000000)))
+print(ticlib.tic_settings_set_current_limit(byref(settings), c_uint32(1216)))
 # Pin Settings - make RX digitial input pin
 print(ticlib.tic_settings_set_pin_func(byref(settings),
     t_const['TIC_PIN_NUM_RX'],t_const['TIC_PIN_FUNC_USER_INPUT']))
@@ -61,23 +80,40 @@ if bool(warnings_p):
     for warning in warnings_p:
         print(warning)
         sys.exit()
+print("current_limit: " + str(settings.current_limit))
 print(ticlib.tic_set_settings(byref(t_handle), byref(settings)))
 print(ticlib.tic_reinitialize(byref(t_handle)))
 
+
+# Reset after settings applied
+# print(ticlib.tic_reset(byref(t_handle)))
+
 print("\nRunning Motion Commands...")
-print(ticlib.tic_exit_safe_start(byref(t_handle)))
+
+# Homing settings
+print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(60000000)))
+print(ticlib.tic_set_max_accel(byref(t_handle), c_uint32(90000000)))
+print(ticlib.tic_set_max_decel(byref(t_handle), c_uint32(90000000)))
+#print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1597*2)))
+print(ticlib.tic_reset_command_timeout(byref(t_handle)))
+print(ticlib.tic_set_target_velocity(byref(t_handle), c_int32(60000000)))
 print(ticlib.tic_energize(byref(t_handle)))
-# print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(120000000)))
-# print(ticlib.tic_set_max_speed(byref(t_handle), c_uint32(10000)))
-# print(ticlib.tic_set_max_accel(byref(t_handle), c_uint32(50000000)))
-print(ticlib.tic_halt_and_set_position(byref(t_handle), c_int32(0)))
-print(ticlib.tic_reinitialize(byref(t_handle)))
+print(ticlib.tic_exit_safe_start(byref(t_handle)))
+
+#print(ticlib.tic_halt_and_set_position(byref(t_handle), c_int32(0)))
+#print(ticlib.tic_reinitialize(byref(t_handle)))
 #print(ticlib.tic_reset_command_timeout(byref(t_handle)))
 
-print(ticlib.tic_set_target_position(byref(t_handle), c_int32(1597*2)))
-#print(ticlib.tic_set_target_velocity(byref(t_handle), c_int32(120000000)))
 
 sleep(3)
+
+# Close down motor
+print('slowing down')
+print(ticlib.tic_set_target_velocity(byref(t_handle), c_int32(0)))
+print(ticlib.tic_enter_safe_start(byref(t_handle)))
+print(ticlib.tic_deenergize(byref(t_handle)))
+print(ticlib.tic_clear_driver_error(byref(t_handle)))
+
 
 variables_p = POINTER(tic_variables)()
 print(ticlib.tic_get_variables(byref(t_handle), byref(variables_p),c_bool(True)))
@@ -104,22 +140,24 @@ ecodes = [
     "TIC_ERROR_ENCODER_SKIP"]
 
 print('e:{0:b}'.format(e_bit_mask))
-print('c:{0:b}'.format(t_const['TIC_ERROR_SERIAL_RX_OVERRUN']))
 for code in ecodes:
     if (e_bit_mask & t_const[code]) == t_const[code]:
         print("Error: " + code)
 
-# Close down motor
-print(ticlib.tic_clear_driver_error(byref(t_handle)))
-print(ticlib.tic_deenergize(byref(t_handle)))
-
+print("Locating home...")
 # Pin Reading Demo
-for i in range(0,3):
+home_old = 1
+for i in range(0,100):
     variables_p = POINTER(tic_variables)()
-    print(ticlib.tic_get_variables(byref(t_handle), byref(variables_p),c_bool(True)))
+    ticlib.tic_get_variables(byref(t_handle), byref(variables_p),c_bool(True))
     variables = variables_p[0]
-    print(ticlib.tic_variables_get_digital_reading(byref(variables),t_const['TIC_PIN_NUM_RX']))
-    sleep(1)
+    home_new = ticlib.tic_variables_get_digital_reading(byref(variables),t_const['TIC_PIN_NUM_RX'])
+    if not home_old == home_new:
+        print("home!")
+        home_old = home_new
+        #tic_variables_get_current_position
+    sleep(0.05)
+
 
 # INTERNAL DEVICE CASTING, EXAMPLE #1
 # devchk = cast(handle_p[0].device, POINTER(tic_device))
