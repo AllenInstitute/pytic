@@ -140,7 +140,7 @@ ecodes = [
 
 print('e:{0:b}'.format(e_bit_mask))
 for code in ecodes:
-    if (e_bit_mask & t_const[code]) == t_const[code]:
+    if ((e_bit_mask >> t_const[code]) & 1):
         print("Error: " + code)
 
 print("Locating home...")
