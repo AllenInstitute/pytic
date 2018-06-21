@@ -1,0 +1,14 @@
+device:
+  serial_number: 00219838
+  product: TIC_PRODUCT_T825
+motor:
+  steps_per_revolution: 200 # steps
+  max_speed: 180000000 # pulses/s * 10^-4
+  starting_speed: 0 # pulses/s * 10^-4
+  max_acceleration: 9000000 # pulses/s^2 * 10^-2
+  max_deceleration: 9000000 # pulses/s^2 * 10^-2
+  step_mode: TIC_STEP_MODE_MICROSTEP16 # see pytic_protocol.py for options
+  current_limit: 640 # mA (must be from table, only certain values alolowable by controller)
+  decay_mode: TIC_DECAY_MODE_T825_FAST # see pytic_protocol.py for options
+sensor:
+  home_sensor_pin: TIC_PIN_NUM_RX # see pytic_protocol.py for options
