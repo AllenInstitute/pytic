@@ -42,7 +42,6 @@ print(ticlib.tic_settings_fill_with_defaults(byref(settings)))
 print(ticlib.tic_settings_set_auto_clear_driver_error(byref(settings), c_bool(True)))
 print(ticlib.tic_settings_set_ignore_err_line_high(byref(settings),c_bool(True)))
 print(ticlib.tic_settings_set_serial_crc_enabled(byref(settings),c_bool(False)))
-print(ticlib.tic_settings_set_serial_crc_enabled(byref(settings),c_bool(False)))
 print(ticlib.tic_settings_set_command_timeout(byref(settings),c_uint16(0)))
 
 # Home Settings

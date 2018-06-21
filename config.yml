@@ -1,7 +1,7 @@
-device:
+settings:
   serial_number: 00219838
   product: TIC_PRODUCT_T825
-motor:
+  auto_clear_driver_error: True
   steps_per_revolution: 200 # steps
   max_speed: 180000000 # pulses/s * 10^-4
   starting_speed: 0 # pulses/s * 10^-4
