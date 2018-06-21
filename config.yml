@@ -12,3 +12,6 @@ motor:
   decay_mode: TIC_DECAY_MODE_T825_FAST # see pytic_protocol.py for options
 sensor:
   home_sensor_pin: TIC_PIN_NUM_RX # see pytic_protocol.py for options
+logging:
+  console_level: DEBUG
+  file_level: DEBUG
