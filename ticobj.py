@@ -7,8 +7,8 @@ from pytic_structures import *
 from functools import wraps
 import logging
 
-config_file = "config.yml"
-
+# File Locations
+yml_config_file = "config.yml"
 usblib = windll.LoadLibrary("C:\\Users\\danc\\dev\\libusbp\\build\\libusbp-1.dll")
 ticlib = windll.LoadLibrary("C:\\Users\\danc\\dev\\tic\\build\\libpololu-tic-1.dll")
 
@@ -37,39 +37,43 @@ def TED(func):
             return 0
     return func_wrapper
 
-def load_yaml_config():
-    with open("config.yml", 'r') as ymlfile:
-        cfg = yaml.load(ymlfile)
-    return cfg
-
 class TicObj(object):
     def __init__(self):
-        self.cfg = load_yaml_config()
+        # make config file passed to 
+        # tic_device_settings durring 
+        # intialization so there can be multiple settings options
+        pass
         
-    def list_connected_serial_numbers(self):
-        devcnt = c_size_t(0)
-        dev_pp = POINTER(POINTER(tic_device))()
-        self.e_p = ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
-        if bool(self.e_p):
-            print(self.e_p.contents.message)
-        else:
-            if not devcnt.value:
-                print("No Tic devices connected.")
-            for i in range(0, devcnt.value):
-                ticdev = dev_pp[0][i]
-                print("Tic Device #: {0:d}, Serial #: {1:s}".format(i, ticdev.serial_number))
-    
+    @TED
+    def _list_connected_devices(self):
+        self._devcnt = c_size_t(0)
+        self._dev_pp = POINTER(POINTER(tic_device))()
+        e_p = ticlib.tic_list_connected_devices(byref(self._dev_pp), byref(self._devcnt))
+        return e_p
 
+    def print_connected_device_serial_numbers(self):
+        self._list_connected_devices()
+        if not self._devcnt.value:
+            print("No Tic devices connected.")
+        for i in range(0, self._devcnt.value):
+            ticdev = self._dev_pp[0][i]
+            print("Tic Device #: {0:d}, Serial #: {1:s}".format(i, ticdev.serial_number))
+
+    def connect_to_serial_number(self, serial_number):
+        pass
+        
 class Tic_Device_Settings(object):
-    def __init__(self):
+    def __init__(self, config_file):
         self.settings = tic_settings()
+        self._config_file = config_file
         self._settings_create()
         self._fill_with_defaults()
         self._load_config_settings()
-        # self.apply_settings_to_device() # make automatic or on command so can be changed later?
+        # below needs to be called for settings to take effect
+        # self.apply_settings_to_device() 
 
     def _fill_with_defaults(self):
-        with open(config_file, 'r') as ymlfile:
+        with open(self._config_file, 'r') as ymlfile:
             cfg = yaml.load(ymlfile)
         self.settings.product = t_const[cfg['settings']['product']]
         ticlib.tic_settings_fill_with_defaults(byref(self.settings))
@@ -107,11 +111,11 @@ class Tic_Device_Settings(object):
         return e_p
 
     def _load_config_settings(self):
-        with open(config_file, 'r') as ymlfile:
+        with open(self._config_file, 'r') as ymlfile:
             cfg = yaml.load(ymlfile)
 
         cfg_settings = cfg['settings']
-    
+
         setting_names = []
         setting_types = []
         for setting in self._settings._fields_:
@@ -120,21 +124,42 @@ class Tic_Device_Settings(object):
 
         for setting in cfg_settings: 
             if setting in setting_names:
-                value = cfg_settings[setting]
-                idx = setting_names.index(setting) 
-                if 'TIC' in str(value):
-                    c_val = setting_types[idx](t_const[value]) 
+                if setting == 'pin_settings':
+                    for pin in cfg_settings[setting]:
+                            i = t_const[pin['pin_num']]
+                            if 'func' in pin:
+                                self.settings.pin_settings[i].func = t_const[pin['func']]
+                            if 'pullup' in pin:
+                                self.settings.pin_settings[i].pullup = pin['pullup']
+                            if 'analog' in pin:
+                                self.settings.pin_settings[i].analog = pin['analog']
+                            if 'polarity' in pin:
+                                self.settings.pin_settings[i].polarity = pin['polarity']
                 else:
-                    c_val = setting_types[idx](value)
-                setattr(self.settings, setting, c_val)
+                    value = cfg_settings[setting]
+                    idx = setting_names.index(setting)
+                    if 'TIC' in str(value):
+                        c_val = setting_types[idx](t_const[value]) 
+                    else:
+                        c_val = setting_types[idx](value)
+                    setattr(self.settings, setting, c_val)
 
 if __name__ == '__main__':
     tic = TicObj()
-    tset = Tic_Device_Settings()
-    print(tset.settings.product)
-    print(tset.settings.current_limit)
-    handle = c_int()
-    print(tset.apply_settings_to_device(handle))
+    tic.print_connected_device_serial_numbers()
+    tset = Tic_Device_Settings(yml_config_file)
+
+    
+    # print(tset.settings.product)
+    # print(tset.settings.max_speed)
+    # print(tset.settings.current_limit)
+    # handle = c_int()
+    # print(tset.apply_settings_to_device(handle))
+    # for i in range(0, 5):
+    #     print(tset.settings.pin_settings[i].pullup)
+
+
+
 
 
     # SETTINGS CONFIG FILE
