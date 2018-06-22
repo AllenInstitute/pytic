@@ -4,8 +4,9 @@ from ctypes import *
 from time import sleep
 from pytic_protocol import tic_constant as t_const
 from pytic_structures import *
-from functools import wraps
+from functools import wraps, partial
 import logging
+import numpy as np
 
 # File Locations
 yml_config_file = "config.yml"
@@ -61,6 +62,33 @@ class TicObj(object):
 
     def connect_to_serial_number(self, serial_number):
         pass
+
+class Tic_Device_Variable(object):
+    def __init__(self, device_handle):
+        self._device_handle = device_handle
+        self._tic_variables_p = POINTER(tic_variables)()
+        self._tic_variables = tic_variables()
+        self._convert_structure_to_readonly_properties()
+
+    def _convert_structure_to_readonly_properties(self):
+        for field in self._tic_variables._fields_:
+            if not field[0] == 'pin_info':
+                prop = property(fget=partial(self._get_tic_readonly_property, field[0]))
+                setattr(Tic_Device_Variable, field[0], prop)
+
+    @TED
+    def _update_tic_variables(self):
+        e_p = ticlib.tic_get_variables(byref(self._device_handle), \
+                                       byref(self._tic_variables_p), c_bool(True))
+        self._tic_variables = self._tic_variables_p[0]
+        return e_p
+
+    def _get_tic_readonly_property(self, field, obj):
+        # print(field)
+        # print(obj)
+        self._update_tic_variables()
+        return getattr(self._tic_variables, field)
+
         
 class Tic_Device_Settings(object):
     def __init__(self, config_file):
@@ -145,9 +173,25 @@ class Tic_Device_Settings(object):
                     setattr(self.settings, setting, c_val)
 
 if __name__ == '__main__':
-    tic = TicObj()
-    tic.print_connected_device_serial_numbers()
-    tset = Tic_Device_Settings(yml_config_file)
+    # CONNECT TO DEVICE
+    devcnt = c_size_t(0)
+    dev_pp = POINTER(POINTER(tic_device))()
+    ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
+    ticdev = dev_pp[0][0]
+
+    t_handle_p = POINTER(tic_handle)()
+    ticlib.tic_handle_open(byref(ticdev), byref(t_handle_p))
+    t_handle = t_handle_p[0]
+
+    tvar = Tic_Device_Variable(t_handle)
+    print(tvar.energized)
+    print(tvar.max_accel)
+    print(tvar.current_position)
+    print(tvar.vin_voltage)
+
+    # tic = TicObj()
+    # tic.print_connected_device_serial_numbers()
+    # tset = Tic_Device_Settings(yml_config_file)
 
     
     # print(tset.settings.product)
@@ -159,6 +203,13 @@ if __name__ == '__main__':
     #     print(tset.settings.pin_settings[i].pullup)
 
 
+    # def _convert_structure_to_readonly_properties(self):
+    #     self._fields = np.zeros(len(self._tic_variables._fields),2)
+    #     for i, v in enumerate(self._tic_variables._fields_):
+    #         self._fields[i,0] = v[0]
+    #         self._fields[i,1] = v[1]
+    #         if not self._fields == 'pin_info':
+    #             property(fget=partial(self._get_updated_attribute,self._field[0]))
 
 
 
