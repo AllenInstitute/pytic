@@ -40,6 +40,9 @@ def TED(func):
 
 class PyTic(object):
     def __init__(self):
+        '''
+        Fold settings obj and variables obj into this object
+        '''
         self.device = None
         self.handle = None
         self._commands = [('set_target_position', c_int32),
@@ -159,8 +162,8 @@ class PyTic_Variable(object):
 class PyTic_Settings(object):
     def __init__(self, config_file):
         '''
-        Convert to improved load format used in tic_variables to make attributes
-        part of host class and set in similar method using the structure class
+        Convert to improved load format used in tic_variables and TIC macro recognition
+        for PyTic obj to make attributes part of host class and set in similar method using the structure class
         '''
         self.settings = tic_settings()
         self._config_file = config_file
@@ -248,13 +251,16 @@ if __name__ == '__main__':
     tic.connect_to_serial_number('00219838')
     tic.energize()
     tic.exit_safe_start()
-    sleep(5)
+    for i in range(0,5):
+        tic.set_target_position(4000)
+        sleep(1.5)
+        tic.set_target_position(0)
+        sleep(1.5)
     tic.enter_safe_start()    
     tic.deenergize()
-    tic.set_target_position(4000)
-    var = PyTic_Variable(tic.handle)
-    sleep(1)
-    print(var.target_position)
+    # var = PyTic_Variable(tic.handle)
+    # sleep(2)
+    # print(var.target_position)
 
     # # CONNECT TO DEVICE
     # devcnt = c_size_t(0)
