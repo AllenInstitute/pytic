@@ -38,18 +38,49 @@ def TED(func):
             return 0
     return func_wrapper
 
-class TicObj(object):
+class PyTic(object):
     def __init__(self):
-        # make config file passed to 
-        # tic_device_settings durring 
-        # intialization so there can be multiple settings options
-        pass
-        
+        self.device = None
+        self.handle = None
+        self._commands = [('set_target_position', c_int32),
+                          ('energize', None),
+                          ('deenergize', None),
+                          ('exit_safe_start', None),
+                          ('enter_safe_start', None),
+                          ('reset', None),
+                          ('clear_driver_error', None),
+                          ('set_max_speed', c_uint32)]
+        self._create_tic_command_attributes()
+
+    def _create_tic_command_attributes(self):
+        for c in self._commands:
+            if bool(c[1]):
+                setattr(self.__class__, c[0], partial(self._tic_command_with_value, c[0], c[1]))
+            else:
+                setattr(self.__class__, c[0], partial(self._tic_command, c[0]))
+
+    @TED
+    def _tic_command(self, cmd_name):
+        e_p = getattr(ticlib,'tic_'+ cmd_name)(byref(self.handle))
+        return e_p
+
+    @TED
+    def _tic_command_with_value(self, cmd_name, c_type, value):
+        e_p = getattr(ticlib,'tic_'+ cmd_name)(byref(self.handle), c_type(value))
+        return e_p
+
     @TED
     def _list_connected_devices(self):
         self._devcnt = c_size_t(0)
         self._dev_pp = POINTER(POINTER(tic_device))()
         e_p = ticlib.tic_list_connected_devices(byref(self._dev_pp), byref(self._devcnt))
+        return e_p
+
+    @TED
+    def _tic_handle_open(self):
+        handle_p = POINTER(tic_handle)()
+        e_p = ticlib.tic_handle_open(byref(self.device), byref(handle_p))
+        self.handle = handle_p[0]
         return e_p
 
     def print_connected_device_serial_numbers(self):
@@ -61,13 +92,18 @@ class TicObj(object):
             print("Tic Device #: {0:d}, Serial #: {1:s}".format(i, ticdev.serial_number))
 
     def connect_to_serial_number(self, serial_number):
-        pass
+        self._list_connected_devices()
+        for i in range(0, self._devcnt.value):
+            if str(serial_number) == str(self._dev_pp[0][i].serial_number):
+                self.device = self._dev_pp[0][i]
+                self._tic_handle_open()
+                return 0
+        if not self.device:
+            logger.error("Serial number device not found.")
+            return 1
 
-# class Tic_Device_Pin_Info(object):
-#     def __init__(self):
-#         self.pin_num = 0
 
-class Tic_Device_Variable(object):
+class PyTic_Variable(object):
     def __init__(self, device_handle):
         self._device_handle = device_handle
         self._tic_variables_p = POINTER(tic_variables)()
@@ -83,7 +119,7 @@ class Tic_Device_Variable(object):
         for field in tic_variables._fields_:
             if not field[0] == 'pin_info':
                 prop = property(fget=partial(self._get_tic_readonly_property, field[0]))
-                setattr(Tic_Device_Variable, field[0], prop)
+                setattr(self.__class__, field[0], prop)
         
         for i in range(0, t_const['TIC_CONTROL_PIN_COUNT']):
             for field in pin_info._fields_:
@@ -107,8 +143,12 @@ class Tic_Device_Variable(object):
         return getattr(self._tic_variables.pin_info[pin_num], field)
 
         
-class Tic_Device_Settings(object):
+class PyTic_Settings(object):
     def __init__(self, config_file):
+        '''
+        Convert to improved load format used in tic_variables to make attributes
+        part of host class and set in similar method using the structure class
+        '''
         self.settings = tic_settings()
         self._config_file = config_file
         self._settings_create()
@@ -190,23 +230,36 @@ class Tic_Device_Settings(object):
                     setattr(self.settings, setting, c_val)
 
 if __name__ == '__main__':
-    # CONNECT TO DEVICE
-    devcnt = c_size_t(0)
-    dev_pp = POINTER(POINTER(tic_device))()
-    ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
-    ticdev = dev_pp[0][0]
 
-    t_handle_p = POINTER(tic_handle)()
-    ticlib.tic_handle_open(byref(ticdev), byref(t_handle_p))
-    t_handle = t_handle_p[0]
+    tic = PyTic()
+    tic.connect_to_serial_number('00219838')
+    tic.energize()
+    tic.exit_safe_start()
+    sleep(5)
+    tic.enter_safe_start()    
+    tic.deenergize()
+    tic.set_target_position(4000)
+    var = PyTic_Variable(tic.handle)
+    sleep(1)
+    print(var.target_position)
 
-    tvar = Tic_Device_Variable(t_handle)
-    # print(tvar.energized)
-    # print(tvar.max_accel)
-    # print(tvar.current_position)
-    # print(tvar.vin_voltage)
-    for i in range(0,5):
-        print(tvar.pin_info[i].pin_state)
+    # # CONNECT TO DEVICE
+    # devcnt = c_size_t(0)
+    # dev_pp = POINTER(POINTER(tic_device))()
+    # ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
+    # ticdev = dev_pp[0][0]
+
+    # t_handle_p = POINTER(tic_handle)()
+    # ticlib.tic_handle_open(byref(ticdev), byref(t_handle_p))
+    # t_handle = t_handle_p[0]
+
+    # tvar = Tic_Device_Variable(t_handle)
+    # # print(tvar.energized)
+    # # print(tvar.max_accel)
+    # # print(tvar.current_position)
+    # # print(tvar.vin_voltage)
+    # for i in range(0,5):
+    #     print(tvar.pin_info[i].pin_state)
 
 
 
