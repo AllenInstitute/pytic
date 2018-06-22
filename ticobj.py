@@ -63,18 +63,33 @@ class TicObj(object):
     def connect_to_serial_number(self, serial_number):
         pass
 
+# class Tic_Device_Pin_Info(object):
+#     def __init__(self):
+#         self.pin_num = 0
+
 class Tic_Device_Variable(object):
     def __init__(self, device_handle):
         self._device_handle = device_handle
         self._tic_variables_p = POINTER(tic_variables)()
         self._tic_variables = tic_variables()
+        
+        self.pin_info = []
+        for i in range(0, t_const['TIC_CONTROL_PIN_COUNT']):
+            self.pin_info.append(type('pinfo_'+str(i), (object,), {})())
+
         self._convert_structure_to_readonly_properties()
 
     def _convert_structure_to_readonly_properties(self):
-        for field in self._tic_variables._fields_:
+        for field in tic_variables._fields_:
             if not field[0] == 'pin_info':
                 prop = property(fget=partial(self._get_tic_readonly_property, field[0]))
                 setattr(Tic_Device_Variable, field[0], prop)
+        
+        for i in range(0, t_const['TIC_CONTROL_PIN_COUNT']):
+            for field in pin_info._fields_:
+                prop = property(fget=partial(self._get_pin_readonly_property, field[0], i))
+                setattr(self.pin_info[i].__class__, field[0], prop)
+
 
     @TED
     def _update_tic_variables(self):
@@ -84,10 +99,12 @@ class Tic_Device_Variable(object):
         return e_p
 
     def _get_tic_readonly_property(self, field, obj):
-        # print(field)
-        # print(obj)
         self._update_tic_variables()
         return getattr(self._tic_variables, field)
+
+    def _get_pin_readonly_property(self, field, pin_num, obj):
+        self._update_tic_variables()
+        return getattr(self._tic_variables.pin_info[pin_num], field)
 
         
 class Tic_Device_Settings(object):
@@ -184,10 +201,14 @@ if __name__ == '__main__':
     t_handle = t_handle_p[0]
 
     tvar = Tic_Device_Variable(t_handle)
-    print(tvar.energized)
-    print(tvar.max_accel)
-    print(tvar.current_position)
-    print(tvar.vin_voltage)
+    # print(tvar.energized)
+    # print(tvar.max_accel)
+    # print(tvar.current_position)
+    # print(tvar.vin_voltage)
+    for i in range(0,5):
+        print(tvar.pin_info[i].pin_state)
+
+
 
     # tic = TicObj()
     # tic.print_connected_device_serial_numbers()
