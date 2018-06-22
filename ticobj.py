@@ -43,13 +43,24 @@ class PyTic(object):
         self.device = None
         self.handle = None
         self._commands = [('set_target_position', c_int32),
-                          ('energize', None),
+                          ('set_target_velocity', c_int32),
+                          ('halt_and_set_position', c_int32),
+                          ('halt_and_hold', None),
+                          ('reset_command_timeout', None),
                           ('deenergize', None),
+                          ('energize', None),
                           ('exit_safe_start', None),
                           ('enter_safe_start', None),
                           ('reset', None),
                           ('clear_driver_error', None),
-                          ('set_max_speed', c_uint32)]
+                          ('set_max_speed', c_uint32),
+                          ('set_starting_speed', c_uint32),
+                          ('set_max_accel', c_uint32),
+                          ('set_max_decel', c_uint32),
+                          ('set_step_mode', c_uint8),
+                          ('set_current_limit', c_uint32),
+                          ('set_current_limit_code', c_uint8),
+                          ('set_decay_mode', c_uint8)]
         self._create_tic_command_attributes()
 
     def _create_tic_command_attributes(self):
@@ -66,6 +77,8 @@ class PyTic(object):
 
     @TED
     def _tic_command_with_value(self, cmd_name, c_type, value):
+        if 'TIC' in str(value):
+            value = t_const[value]
         e_p = getattr(ticlib,'tic_'+ cmd_name)(byref(self.handle), c_type(value))
         return e_p
 
