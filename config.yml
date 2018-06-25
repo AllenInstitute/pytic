@@ -1,4 +1,4 @@
-settings:
+tic_settings:
   product: TIC_PRODUCT_T825
   auto_clear_driver_error: True
   ignore_err_line_high: True
@@ -22,7 +22,7 @@ settings:
     #   polarity: True
 logging:
   console_level: DEBUG
-  file_level: DEBUG
+#  file_level: DEBUG
 general:
   serial_number: 00219838
   steps_per_revolution: 200 # steps
