@@ -11,11 +11,12 @@ import numpy as np
 '''
 Notes:
     - make pip install files and re-order project folders
+    - use sys.path.append() while working out bugs in PyTic
 '''
 
 # Driver Locations (x64)
-usblib = windll.LoadLibrary("drivers\\x64\\libusbp-1.dll")
-ticlib = windll.LoadLibrary("drivers\\x64\\libpololu-tic-1.dll")
+usblib = windll.LoadLibrary("..\\drivers\\x64\\libusbp-1.dll")
+ticlib = windll.LoadLibrary("..\\drivers\\x64\\libpololu-tic-1.dll")
 
 # - Logging - 
 logger = logging.getLogger('PyTic')
@@ -316,11 +317,11 @@ if __name__ == '__main__':
 
     tic = PyTic()
     tic.connect_to_serial_number('00219838')
-    tic.settings.load_config('config.yml')
+    tic.settings.load_config('..\\config\\config.yml')
     #tic.setting.apply()
     tic.energize()
     tic.exit_safe_start()
-    for i in range(0,):
+    for i in range(0,1):
         tic.set_target_position(4000)
         sleep(1.5)
         tic.set_target_position(0)
