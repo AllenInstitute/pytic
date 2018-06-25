@@ -320,7 +320,7 @@ if __name__ == '__main__':
     #tic.setting.apply()
     tic.energize()
     tic.exit_safe_start()
-    for i in range(0,5):
+    for i in range(0,):
         tic.set_target_position(4000)
         sleep(1.5)
         tic.set_target_position(0)
