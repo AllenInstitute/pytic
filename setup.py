@@ -1,3 +1,4 @@
+__author__ = "Daniel Castelli"
 from setuptools import setup
 
 setup(
@@ -10,9 +11,5 @@ setup(
     keywords = "PyTic Pololu Tic Stepper Controller Wrapper",
     # url = "",
     packages = ['pytic'],
-    install_requires = ['ctypes',
-                        'numpy',
-                        'yaml',
-                        'functools',
-                        'logging']
+    install_requires = ['PyYAML'],
 )

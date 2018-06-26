@@ -1,4 +1,5 @@
 import sys
+import os
 import yaml
 from ctypes import *
 from time import sleep
@@ -6,7 +7,6 @@ from pytic_protocol import tic_constant as tc
 from pytic_structures import *
 from functools import wraps, partial
 import logging
-import numpy as np
 
 '''
 Notes:
@@ -14,9 +14,11 @@ Notes:
     - use sys.path.append() while working out bugs in PyTic
 '''
 
+fp = os.path.dirname(os.path.abspath(__file__))
+fp = fp[:-5]
 # Driver Locations (x64)
-usblib = windll.LoadLibrary("..\\drivers\\x64\\libusbp-1.dll")
-ticlib = windll.LoadLibrary("..\\drivers\\x64\\libpololu-tic-1.dll")
+usblib = windll.LoadLibrary(fp+r"\drivers\x64\libusbp-1.dll")
+ticlib = windll.LoadLibrary(fp+r"\drivers\x64\libpololu-tic-1.dll")
 
 # - Logging - 
 logger = logging.getLogger('PyTic')
