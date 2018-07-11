@@ -13,6 +13,8 @@ Notes:
     - use sys.path.append() while working out bugs in PyTic
     # - potentially add user-friendly print settings and print variables to console?
 '''
+# Control Logging Level
+LOG_LEVEL = logging.DEBUG
 
 # [T]ic [E]rror [D]ecoder
 def TED(func):
@@ -60,7 +62,7 @@ class PyTic(object):
     def _initialize_logger(self):
         # - Logging - 
         _logger = logging.getLogger('PyTic')
-        _logger.setLevel(logging.DEBUG)
+        _logger.setLevel(LOG_LEVEL)
         _formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         # Console Logging
         _ch = logging.StreamHandler()
