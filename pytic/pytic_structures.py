@@ -1,5 +1,5 @@
 from ctypes import *
-from pytic_protocol import tic_constant as t_const
+from .pytic_protocol import tic_constant as t_const
 
 class libusbp_generic_interface(Structure):
     _fields_ = [("interface_number", c_uint8),
