@@ -66,7 +66,7 @@ class PyTic(object):
         _formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         # Console Logging
         _ch = logging.StreamHandler()
-        _ch.setLevel(logging.DEBUG)
+        _ch.setLevel(LOG_LEVEL)
         _ch.setFormatter(_formatter)
         _logger.addHandler(_ch)
         return _logger
