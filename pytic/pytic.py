@@ -3,37 +3,16 @@ import os
 import yaml
 from ctypes import *
 from time import sleep
-from pytic_protocol import tic_constant as tc
-from pytic_structures import *
+from .pytic_protocol import tic_constant as tc
+from .pytic_structures import *
 from functools import wraps, partial
 import logging
 
 '''
 Notes:
-    - make pip install files and re-order project folders
     - use sys.path.append() while working out bugs in PyTic
+    # - potentially add user-friendly print settings and print variables to console?
 '''
-
-fp = os.path.dirname(os.path.abspath(__file__))
-fp = fp[:-5]
-# Driver Locations (x64)
-usblib = windll.LoadLibrary(fp+r"\drivers\x64\libusbp-1.dll")
-ticlib = windll.LoadLibrary(fp+r"\drivers\x64\libpololu-tic-1.dll")
-
-# - Logging - 
-logger = logging.getLogger('PyTic')
-logger.setLevel(logging.DEBUG)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# Console Logging
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-ch.setFormatter(formatter)
-logger.addHandler(ch)
-## File Logging
-#fh = logging.FileHandler('PyTic.log')
-#fh.setLevel(logging.DEBUG)
-#fh.setFormatter(formatter)
-#logger.addHandler(fh)
 
 # [T]ic [E]rror [D]ecoder
 def TED(func):
@@ -51,7 +30,8 @@ def TED(func):
 
 class PyTic(object):
     def __init__(self, log_file=None):
-        self._logger = logging.getLogger('PyTic') 
+        self._load_drivers()
+        self._logger = self._initialize_logger()
         self.device = None
         self.handle = None
         self.settings = None
@@ -77,6 +57,26 @@ class PyTic(object):
                           ('set_decay_mode', c_uint8)]
         self._create_tic_command_attributes()
 
+    def _initialize_logger(self):
+        # - Logging - 
+        _logger = logging.getLogger('PyTic')
+        _logger.setLevel(logging.DEBUG)
+        _formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+        # Console Logging
+        _ch = logging.StreamHandler()
+        _ch.setLevel(logging.DEBUG)
+        _ch.setFormatter(_formatter)
+        _logger.addHandler(_ch)
+        return _logger
+        
+
+    def _load_drivers(self):
+        # Driver Locations (x64)
+        file_path = os.path.dirname(os.path.abspath(__file__))
+        file_path = file_path[:-len('pytic')]
+        self.usblib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libusbp-1.dll")
+        self.ticlib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libpololu-tic-1.dll")
+
     def _create_tic_command_attributes(self):
         for c in self._commands:
             if bool(c[1]):
@@ -86,27 +86,27 @@ class PyTic(object):
 
     @TED
     def _tic_command(self, cmd_name):
-        e_p = getattr(ticlib,'tic_'+ cmd_name)(byref(self.handle))
+        e_p = getattr(self.ticlib,'tic_'+ cmd_name)(byref(self.handle))
         return e_p
 
     @TED
     def _tic_command_with_value(self, cmd_name, c_type, value):
         if 'TIC' in str(value):
             value = tc[value]
-        e_p = getattr(ticlib,'tic_'+ cmd_name)(byref(self.handle), c_type(value))
+        e_p = getattr(self.ticlib,'tic_'+ cmd_name)(byref(self.handle), c_type(value))
         return e_p
 
     @TED
     def _list_connected_devices(self):
         self._devcnt = c_size_t(0)
         self._dev_pp = POINTER(POINTER(tic_device))()
-        e_p = ticlib.tic_list_connected_devices(byref(self._dev_pp), byref(self._devcnt))
+        e_p = self.ticlib.tic_list_connected_devices(byref(self._dev_pp), byref(self._devcnt))
         return e_p
 
     @TED
     def _tic_handle_open(self):
         handle_p = POINTER(tic_handle)()
-        e_p = ticlib.tic_handle_open(byref(self.device), byref(handle_p))
+        e_p = self.ticlib.tic_handle_open(byref(self.device), byref(handle_p))
         self.handle = handle_p[0]
         return e_p
 
@@ -116,7 +116,8 @@ class PyTic(object):
             print("No Tic devices connected.")
         for i in range(0, self._devcnt.value):
             ticdev = self._dev_pp[0][i]
-            print("Tic Device #: {0:d}, Serial #: {1:s}".format(i, ticdev.serial_number))
+            sn = ticdev.serial_number.decode('utf-8')
+            print("Tic Device #: {0}, Serial #: {1}".format(i, sn))
 
     def connect_to_serial_number(self, serial_number):
         self._list_connected_devices()
@@ -124,8 +125,8 @@ class PyTic(object):
             if str(serial_number) == str(self._dev_pp[0][i].serial_number):
                 self.device = self._dev_pp[0][i]
                 self._tic_handle_open()
-                self.variables = PyTic_Variables(self.handle)
-                self.settings = PyTic_Settings(self.handle, self.variables.product)
+                self.variables = PyTic_Variables(self.handle, (self.usblib, self.ticlib))
+                self.settings = PyTic_Settings(self.handle, (self.usblib, self.ticlib), self.variables.product)
                 return 0
         if not self.device:
             self._logger.error("Serial number device not found.")
@@ -133,7 +134,8 @@ class PyTic(object):
 
 
 class PyTic_Variables(object):
-    def __init__(self, device_handle):
+    def __init__(self, device_handle, driver_handles):
+        self.usblib, self.ticlib = driver_handles
         self._logger = logging.getLogger('PyTic') 
         self._device_handle = device_handle
         self._tic_variables_p = POINTER(tic_variables)()
@@ -158,7 +160,7 @@ class PyTic_Variables(object):
 
     @TED
     def _update_tic_variables(self):
-        e_p = ticlib.tic_get_variables(byref(self._device_handle), \
+        e_p = self.ticlib.tic_get_variables(byref(self._device_handle), \
                                        byref(self._tic_variables_p), c_bool(True))
         self._tic_variables = self._tic_variables_p[0]
         return e_p
@@ -195,7 +197,8 @@ class PyTic_Variables(object):
 
         
 class PyTic_Settings(object):
-    def __init__(self, device_handle, product):
+    def __init__(self, device_handle, driver_handles, product):
+        self.usblib, self.ticlib = driver_handles
         self._logger = logging.getLogger('PyTic')
         self._device_handle = device_handle
         # local vs device - local settings on pc, device settings on tic
@@ -248,20 +251,20 @@ class PyTic_Settings(object):
         
     @TED
     def _pull_device_settings(self):
-        e_p = ticlib.tic_get_settings(byref(self._device_handle),
+        e_p = self.ticlib.tic_get_settings(byref(self._device_handle),
                                       byref(self._device_settings_p))
         self._device_settings = self._device_settings_p[0]
         return e_p
 
     @TED
     def _set_settings(self):
-        e_p = ticlib.tic_set_settings(byref(self._device_handle),
+        e_p = self.ticlib.tic_set_settings(byref(self._device_handle),
                                       byref(self._local_settings))
         return e_p
         
     def _fill_with_defaults(self, product):
         self._local_settings.product = product
-        ticlib.tic_settings_fill_with_defaults(byref(self._local_settings))
+        self.ticlib.tic_settings_fill_with_defaults(byref(self._local_settings))
 
     def apply(self):
         self._settings_fix()
@@ -271,7 +274,7 @@ class PyTic_Settings(object):
     @TED
     def _settings_fix(self):
         warnings_p = POINTER(c_char_p)()
-        e_p = ticlib.tic_settings_fix(byref(self._local_settings),warnings_p)
+        e_p = self.ticlib.tic_settings_fix(byref(self._local_settings),warnings_p)
         if bool(warnings_p):
             for w in warnings_p:
                 self._logger.warning(w)
@@ -279,7 +282,7 @@ class PyTic_Settings(object):
 
     @TED
     def _reinitialize(self):
-        e_p = ticlib.tic_reinitialize(byref(self._device_handle))
+        e_p = self.ticlib.tic_reinitialize(byref(self._device_handle))
         return e_p
 
     def load_config(self, config_file):
@@ -319,7 +322,7 @@ if __name__ == '__main__':
 
     tic = PyTic()
     tic.connect_to_serial_number('00219838')
-    tic.settings.load_config('..\\config\\config.yml')
+    #tic.settings.load_config('..\\config\\config.yml')
     #tic.setting.apply()
     tic.energize()
     tic.exit_safe_start()
@@ -355,11 +358,11 @@ if __name__ == '__main__':
     # # CONNECT TO DEVICE
     # devcnt = c_size_t(0)
     # dev_pp = POINTER(POINTER(tic_device))()
-    # ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
+    # self.ticlib.tic_list_connected_devices(byref(dev_pp), byref(devcnt))
     # ticdev = dev_pp[0][0]
 
     # t_handle_p = POINTER(tic_handle)()
-    # ticlib.tic_handle_open(byref(ticdev), byref(t_handle_p))
+    # self.ticlib.tic_handle_open(byref(ticdev), byref(t_handle_p))
     # t_handle = t_handle_p[0]
 
     # tvar = Tic_Device_Variable(t_handle)
@@ -399,31 +402,31 @@ if __name__ == '__main__':
     # SETTINGS CONFIG FILE
     # @property
     # def product(self):
-    #     product_int = ticlib.tic_settings_get_product(byref(self._settings))
+    #     product_int = self.ticlib.tic_settings_get_product(byref(self._settings))
     #     chklist = ["TIC_PRODUCT_T825", "TIC_PRODUCT_T834", "TIC_PRODUCT_T500"]
     #     for p in chklist:
     #         if product_int == tc[p]:
     #             return p;
     # @product.setter
     # def product(self, product_str):
-    #     ticlib.tic_settings_set_product(byref(self._settings),c_uint8(tc[product_str]))
+    #     self.ticlib.tic_settings_set_product(byref(self._settings),c_uint8(tc[product_str]))
 
     # @property
     # def auto_clear_driver_error(self):
-    #     return bool(ticlib.tic_settings_get_auto_clear_driver_error((byref(self._settings))))
+    #     return bool(self.ticlib.tic_settings_get_auto_clear_driver_error((byref(self._settings))))
 
     # @auto_clear_driver_error.setter
     # def auto_clear_driver_error(self, val_bool):
-    #     ticlib.tic_settings_set_auto_clear_driver_error( \
+    #     self.ticlib.tic_settings_set_auto_clear_driver_error( \
     #         byref(self._settings), c_bool(val_bool))
 
     # @property
     # def ignore_error_line_high(self):
-    #     return bool(ticlib.tic_settings_get_ignore_err_line_high(byref(self._settings)))
+    #     return bool(self.ticlib.tic_settings_get_ignore_err_line_high(byref(self._settings)))
 
     # @ignore_error_line_high.setter
     # def ignore_error_line_high(self, val_bool):
-    #         ticlib.tic_settings_set_ignore_error_line_high( \
+    #         self.ticlib.tic_settings_set_ignore_error_line_high( \
     #         byref(self._settings), c_bool(val_bool))
 
 
