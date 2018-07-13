@@ -75,7 +75,7 @@ class PyTic(object):
     def _load_drivers(self):
         # Driver Locations (x64)
         file_path = os.path.dirname(os.path.abspath(__file__))
-        file_path = file_path[:-len('pytic')]
+        #file_path = file_path[:-len('pytic')]
         self.usblib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libusbp-1.dll")
         self.ticlib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libpololu-tic-1.dll")
 
