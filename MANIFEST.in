@@ -1,2 +1,3 @@
 include drivers/x64/*.dll
 include drivers/x64/*.lib
+include config/*.yml
