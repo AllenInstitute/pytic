@@ -12,4 +12,5 @@ setup(
     # url = "",
     packages = ['pytic'],
     install_requires = ['PyYAML'],
+    include_package_data=True,
 )
