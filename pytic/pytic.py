@@ -112,14 +112,16 @@ class PyTic(object):
         self.handle = handle_p[0]
         return e_p
 
-    def print_connected_device_serial_numbers(self):
+    def list_connected_device_serial_numbers(self):
         self._list_connected_devices()
+        tic_list = []
         if not self._devcnt.value:
             print("No Tic devices connected.")
         for i in range(0, self._devcnt.value):
             ticdev = self._dev_pp[0][i]
-            sn = ticdev.serial_number.decode('utf-8')
-            print("Tic Device #: {0}, Serial #: {1}".format(i, sn))
+            tic_list.append(ticdev.serial_number.decode('utf-8'))
+            # print("Tic Device #: {0}, Serial #: {1}".format(i, sn))
+        return tic_list
 
     def connect_to_serial_number(self, serial_number):
         self._list_connected_devices()
@@ -323,19 +325,22 @@ class PyTic_Settings(object):
 if __name__ == '__main__':
 
     tic = PyTic()
-    tic.connect_to_serial_number('00219838')
-    #tic.settings.load_config('..\\config\\config.yml')
-    #tic.setting.apply()
-    tic.energize()
-    tic.exit_safe_start()
-    for i in range(0,1):
-        tic.set_target_position(4000)
-        sleep(1.5)
-        tic.set_target_position(0)
-        sleep(1.5)
-    tic.enter_safe_start()    
-    tic.deenergize()
-    tic.variables.error_status
+    print(tic.list_connected_device_serial_numbers())
+
+    ## move test
+    # tic.connect_to_serial_number('00219838')
+    # #tic.settings.load_config('..\\config\\config.yml')
+    # #tic.setting.apply()
+    # tic.energize()
+    # tic.exit_safe_start()
+    # for i in range(0,1):
+    #     tic.set_target_position(4000)
+    #     sleep(1.5)
+    #     tic.set_target_position(0)
+    #     sleep(1.5)
+    # tic.enter_safe_start()    
+    # tic.deenergize()
+    # tic.variables.error_status
  
  
     # print(tic.settings.product)
