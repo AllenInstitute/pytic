@@ -1,3 +1,4 @@
+include pytic/drivers/*.msi
 include pytic/drivers/x64/*.dll
 include pytic/drivers/x64/*.lib
 include config/*.yml
