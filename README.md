@@ -30,7 +30,7 @@ C:\> pip install pytic
 
 ```
 ----------------------------------
-| Package Relation Tree          |
+|     Package Relation Tree      |
 ----------------------------------
 
 PyTic               [Object]
@@ -43,6 +43,26 @@ PyTic_Protocol      [Constants]
 ---
 
 ## Example Code
+
+Example 
+
+```python
+import pytic
+
+# Initialization
+tic = pytic.PyTic()
+
+# Connect to first available Tic Device serial number over USB
+serial_nums = tic.list_connected_device_serial_numbers()
+tic.connect_to_serial_number(serial_nums[0])
+
+
+
+```
+
+
+## Example YAML Configuration File
+
 
 ---
 
