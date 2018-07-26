@@ -330,7 +330,7 @@ if __name__ == '__main__':
     ## move test
     # tic.connect_to_serial_number('00219838')
     # #tic.settings.load_config('..\\config\\config.yml')
-    # #tic.setting.apply()
+    # #tic.settings.apply()
     # tic.energize()
     # tic.exit_safe_start()
     # for i in range(0,1):

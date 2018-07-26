@@ -24,11 +24,33 @@ C:\> pip install pytic
 
 ---
 
+## Public Methods & Properties
+
+`PyTic` encompasses almost all functionality present in the original C-API with some additional features. The Pololu Tic stepper driver is represented in Python using a `pytic.PyTic()` object. Below are some of the highlighted public methods and properties for interacting with the device. Users can follow the same syntax and reference the [Pololu Tic Manual][pololu_tic_manual] for a list of all possible commands.
+
+```
+----------------------------------
+| Package Relation Tree          |
+----------------------------------
+
+PyTic               [Object]
+  |-- Settings      [Structure]
+  |-- Variables     [Structure]
+  |-- Logger        [Notification]
+
+PyTic_Protocol      [Constants]
+```
+---
+
 ## Example Code
 
 ---
 
 ## Dependencies
+
+Dependencies include the following,
+
+* PyYAML
 
 ---
 
