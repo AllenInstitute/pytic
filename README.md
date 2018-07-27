@@ -40,11 +40,16 @@ PyTic               [Object]
 
 PyTic_Protocol      [Constants]
 ```
+
+### Error Handling
+
+All __Pololu Tic C-API__ functions when dynamically imported into __PyTic__ are wrapped in a higher-order function error handler called __TED__, short for __[T]ic [E]rror [D]ecoder__. __TED__ will make all Tic wrapped functions return 0 from a successful call and 1 from a call that generated an error. In addition, __TED__ performs low-level bit mask decoding and writes the the enumerated error value to the __PyTic__ object internal log. This log can be output the ther terminal or file using the standard [logging][logging_lib] library.
+
 ---
 
 ## Example Code
 
-Example 
+The example code below deomnstrates how to connect to a __Pololu Tic__ device over USB and move to several positions after the previous position has been reached. 
 
 ```python
 import pytic
@@ -108,3 +113,4 @@ External resources include the following,
 
 [pololu_tic_software]: https://github.com/pololu/pololu-tic-software
 [pololu_tic_manual]: https://www.pololu.com/docs/0J71
+[logging_lib]: https://docs.python.org/3/library/logging.html
