@@ -41,7 +41,7 @@ PyTic               [Object]
 PyTic_Protocol      [Constants]
 ```
 
-## PyTic Protocol [C-Constants Dictionary]
+### PyTic Protocol (C-Constants Dictionary)
 
 The __Pololu Tic__ C-API uses `CAPS_DEFINED_CONSTANTS` for setting many of its parameters that represent an integer value. These contants set parameters such as pin function, step mode, etc. The `PyTic` package auto-imports these values from the [tic_protocol.h][tic_protocol_h] header file and stores them in a Python dictionary named `tic_constants` in the `pytic_protocol` module. See [Using Settings][#using_settings] in the [Example Code][#example_code] section to see how to use this dictionary in contect.
 
