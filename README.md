@@ -33,9 +33,9 @@ C:\> pip install pytic
 |     Package Relation Tree      |
 ----------------------------------
 
-PyTic               [Object]
-  |-- Settings      [Structure]
-  |-- Variables     [Structure]
+PyTic               [Tic Object]
+  |-- Settings      [Structure Interface Object]
+  |-- Variables     [Structure Interface Object]
   |-- Logger        [Notification]
 
 PyTic_Protocol      [Module]
@@ -113,6 +113,13 @@ tc = pytic.pytic_protocol.tic_constant
 # Modify individual properties of composite settings object
 tic.settings.product = tc['TIC_PRODUCT_T825']
 tic.settings.step_mode = tc['TIC_STEP_MODE_MICROSTEP16']
+
+# Turn the Serial RX Pin into a generic digital user input
+pin = tc['TIC_PIN_NUM_RX']
+tic.settings.pin_setting[pin].func = tc['TIC_PIN_FUNC_USER_INPUT']
+tic.settings.pin_setting[pin].pullup = True
+
+
 tic.settings.apply()
 
 ```
