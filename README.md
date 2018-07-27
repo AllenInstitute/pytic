@@ -38,7 +38,8 @@ PyTic               [Object]
   |-- Variables     [Structure]
   |-- Logger        [Notification]
 
-PyTic_Protocol      [Constants]
+PyTic_Protocol      [Module]
+  |-- Tic Constants [Dictionary]
 ```
 
 ### PyTic Protocol (C-Constants Dictionary)
