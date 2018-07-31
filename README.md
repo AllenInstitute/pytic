@@ -1,4 +1,4 @@
-<!-- Falcon Optics Readme -->
+<!-- PyTic Readme -->
 # PyTic v0.0.2   
 
 ![pololu tic](images/pololu_tic.png)
@@ -11,7 +11,7 @@
 
 ---
 
-## Installation
+<!-- ## Installation
 
 To install the `PyTic` package on a Windows machine equipped with Python 2.7 or higher, run the following `pip` command:
 
@@ -22,6 +22,8 @@ C:\> pip install pytic
 * Note: Only Windows x64 machines are supported at this time.
 
 ---
+
+-->
 
 ## Public Methods & Properties
 
