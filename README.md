@@ -9,7 +9,6 @@
 
 `PyTic` is an object-oriented Python wrapper for the Pololu Tic stepper driver series. The wrapper interacts with the stepper driver device using the API described in the [pololu-tic-software][pololu_tic_software] GitHub page using the ctypes library. The comunication protocol is USB.
 
-
 ---
 
 ## Installation
@@ -138,6 +137,12 @@ tic.settings.apply()
 Dependencies include the following,
 
 * PyYAML
+
+---
+
+## Level of Support
+
+This code is currently not supported. It is being released to the community AS IS without any guarantee of support. The community is welcome to submit issues, but should not expect an active response.
 
 ---
 
