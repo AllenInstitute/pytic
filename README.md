@@ -7,11 +7,18 @@
 
 ## Introduction
 
-`PyTic` is an object-oriented Python wrapper for the Pololu Tic stepper driver series. The wrapper interacts with the stepper driver device using the API described in the [pololu-tic-software][pololu_tic_software] GitHub page using the ctypes library. The comunication protocol is USB.
+`PyTic` is an object-oriented Python wrapper for the Pololu Tic stepper driver series. The wrapper interacts with the stepper driver device using the API described in the [Pololu-Tic-Software][pololu_tic_software] GitHub page using the ctypes library. The device comunication protocol is USB.
 
 ---
 
-<!-- ## Installation
+## Installation
+
+### Prerequisites
+
+`PyTic` requires the [Tic Software and Drivers for Windows][tic_drivers_win] msi provided by Pololu to be installed as a prerequisite. Other operating system drivers can be found on the [Pololu Tic Resources][tic_resources], but are not currently supported by the Python package.
+
+
+### Pip Install
 
 To install the `PyTic` package on a Windows machine equipped with Python 2.7 or higher, run the following `pip` command:
 
@@ -23,7 +30,6 @@ C:\> pip install pytic
 
 ---
 
--->
 
 ## Public Methods & Properties
 
@@ -129,9 +135,37 @@ tic.settings.apply()
 
 ## Example YAML Configuration File
 
+__PyTic__ settings can be set invidually using the `PyTic.settings` structure interface in the script or all-at-once using a YAML config file and the `PyTic.settings.load_config('\\path\\to\\config.yml')` function. Here is an example YAML config file with some usage notes,
 
+```yaml
+tic_settings:                  # required header for load_config fcn.
+  product: TIC_PRODUCT_T825    
+  auto_clear_driver_error: True           # ** These 4 settings         **
+  ignore_err_line_high: True              # ** were experimentally      **
+  serial_crc_enabled: False               # ** determined to stabalize  **
+  command_timeout: 0                      # ** device performance       **
+  max_speed: 180000000 # pulses/s * 10^-4
+  starting_speed: 0 # pulses/s * 10^-4
+  max_accel: 9000000 # pulses/s^2 * 10^-2
+  max_decel: 9000000 # pulses/s^2 * 10^-2
+  step_mode: TIC_STEP_MODE_MICROSTEP16 # see pytic_protocol.py for options
+  current_limit: 640        # mA (only certain values allowable by controller, see device manual)
+  decay_mode: TIC_DECAY_MODE_T825_FAST # see pytic_protocol.py for options
+  pin_settings:
+    - pin_num: TIC_PIN_NUM_RX
+      func: TIC_PIN_FUNC_USER_INPUT
+      pullup: True
+      analog: False
+    # How to add another IO Pin (pin_id and function minimally required, all other can be ommited to defaults)
+    # - pin_id: TIC_PIN_NUM_TX
+    #   func: TIC_PIN_FUNC_USER_INPUT
+    #   polarity: True
+```
 
+Notes:
+* `CAPS_WITH_UNDERSCORES` are keys for the `tic_contant` dictionary located in `pytic_protocol.py`. Refer to section [Using Settings](#using_settings) for more details on the dictionary and its use. 
 
+ 
 ---
 
 ## Dependencies
@@ -156,8 +190,12 @@ External resources include the following,
 * [Pololu Tic Manual][pololu_tic_manual]
 * [logging Library][logging_lib]
 * [tic_protocol.h][tic_protocol_h]
+* [Tic Software and Drivers for Windows][tic_drivers_win]
+* [Pololu Tic Resources][tic_resources]
 
 [pololu_tic_software]: https://github.com/pololu/pololu-tic-software
 [pololu_tic_manual]: https://www.pololu.com/docs/0J71
 [logging_lib]: https://docs.python.org/3/library/logging.html
 [tic_protocol_h]: https://github.com/pololu/pololu-tic-software/blob/a75c204a2255554e21cc5351c528d930ba5d2c38/include/tic_protocol.h
+[tic_drivers_win]: https://www.pololu.com/file/0J1325/pololu-tic-1.6.2-win.msi
+[tic_resources]:https://www.pololu.com/product/3131/resources
