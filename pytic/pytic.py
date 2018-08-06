@@ -127,7 +127,7 @@ class PyTic(object):
     def connect_to_serial_number(self, serial_number):
         self._list_connected_devices()
         for i in range(0, self._devcnt.value):
-            if str(serial_number) == str(self._dev_pp[0][i].serial_number):
+            if serial_number == self._dev_pp[0][i].serial_number.decode('utf-8'):
                 self.device = self._dev_pp[0][i]
                 self._tic_handle_open()
                 self.variables = PyTic_Variables(self.handle, (self.usblib, self.ticlib))

@@ -101,13 +101,13 @@ tic.exit_safe_start()
 positions = [1000, 2000, 3000, 0]
 for p in positions:
   tic.set_target_position(p)
-  while tic.variables.current position != tic.variables.target_position:
+  while tic.variables.current_position != tic.variables.target_position:
     sleep(0.1)
 
 # De-energize motor and get error status
 tic.enter_safe_start()
 tic.deenergize()
-tic.variables.error_status()
+print(tic.variables.error_status)
 ```
 
 * Note: Modified settings will not take effect until `PyTic.settings.apply()` method is called. This is to avoid unnecessary writes to non-volitile memory.
