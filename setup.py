@@ -8,7 +8,7 @@ class install(_install):
         pass
 
     def post_install_script(self):
-        subprocess.call("msiexec /i pytic\\drivers\\pololu-tic-1.6.2-win.msi")
+        pass
 
     def run(self):
         self.pre_install_script()
@@ -19,15 +19,14 @@ class install(_install):
 
 setup(
     name = "PyTic",
-    version = "0.0.2",
+    version = "0.0.3",
     author = "Daniel Castelli",
     #email = "",
     description = "An object-oriented Python wrapper for Pololu Tic Stepper Controllers.",
-    license = "MIT",
+    license = "Allen Institute Software License",
     keywords = "PyTic Pololu Tic Stepper Controller Wrapper",
     # url = "",
     packages = ['pytic'],
     install_requires = ['PyYAML'],
     include_package_data=True,
-    cmdclass = {'install': install},
 )

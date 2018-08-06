@@ -8,14 +8,6 @@ from .pytic_structures import *
 from functools import wraps, partial
 import logging
 
-'''
-Notes:
-    - use sys.path.append() while working out bugs in PyTic
-    # - potentially add user-friendly print settings and print variables to console?
-'''
-# Control Logging Level
-LOG_LEVEL = logging.DEBUG
-
 # [T]ic [E]rror [D]ecoder
 def TED(func):
     @wraps(func)
@@ -61,16 +53,25 @@ class PyTic(object):
 
     def _initialize_logger(self):
         # - Logging - 
+        self._log_level = logging.DEBUG
         _logger = logging.getLogger('PyTic')
-        _logger.setLevel(LOG_LEVEL)
+        _logger.setLevel(self._log_level)
         _formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
         # Console Logging
         _ch = logging.StreamHandler()
-        _ch.setLevel(LOG_LEVEL)
+        _ch.setLevel(self._log_level)
         _ch.setFormatter(_formatter)
         _logger.addHandler(_ch)
         return _logger
-        
+    
+    @property
+    def log_level(self):
+        return self._log_level
+
+    @log_level.setter
+    def log_level(self, level):
+        self._log_level = level
+        self._logger.setLevel(level)
 
     def _load_drivers(self):
         # Driver Locations (x64)

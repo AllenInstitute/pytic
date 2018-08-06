@@ -4,25 +4,15 @@ tic_settings:
   ignore_err_line_high: True
   serial_crc_enabled: False
   command_timeout: 0
-  max_speed: 180000000 # pulses/s * 10^-4
-  starting_speed: 0 # pulses/s * 10^-4
-  max_accel: 9000000 # pulses/s^2 * 10^-2
-  max_decel: 9000000 # pulses/s^2 * 10^-2
-  step_mode: TIC_STEP_MODE_MICROSTEP16 # see pytic_protocol.py for options
-  current_limit: 640 # mA (must be from table, only certain values alolowable by controller)
-  decay_mode: TIC_DECAY_MODE_T825_FAST # see pytic_protocol.py for options
+  max_speed: 180000000                # pulses/s * 10^-4
+  starting_speed: 0                   # pulses/s * 10^-4
+  max_accel: 9000000                  # pulses/s^2 * 10^-2
+  max_decel: 9000000                  # pulses/s^2 * 10^-2
+  step_mode: TIC_STEP_MODE_MICROSTEP16 
+  current_limit: 640 # mA (see table in Pololu manual for acceptable values)
+  decay_mode: TIC_DECAY_MODE_T825_FAST 
   pin_settings:
     - pin_num: TIC_PIN_NUM_RX
       func: TIC_PIN_FUNC_USER_INPUT
       pullup: True
       analog: False
-    # How to add another IO Pin (pin_id and function minimally required, all other can be ommited to defaults)
-    # - pin_id: TIC_PIN_NUM_TX
-    #   func: TIC_PIN_FUNC_USER_INPUT
-    #   polarity: True
-logging:
-  console_level: DEBUG
-#  file_level: DEBUG
-general:
-  serial_number: 00219838
-  steps_per_revolution: 200 # steps
