@@ -1,5 +1,5 @@
 <!-- PyTic Readme -->
-# PyTic v0.0.2   
+# PyTic v0.0.3   
 
 ![pololu tic](images/pololu_tic.png)
 
