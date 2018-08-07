@@ -17,12 +17,17 @@ class install(_install):
 
         self.post_install_script()
 
+with open('README.md') as f:
+    long_description = f.read()
+
 setup(
     name = "PyTic",
-    version = "0.0.3",
+    version = "0.0.4",
     author = "Daniel Castelli",
     author_email = "danc@alleninstitute.org",
     description = "An object-oriented Python wrapper for Pololu Tic Stepper Controllers.",
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     license = "Allen Institute Software License",
     keywords = "PyTic Pololu Tic Stepper Controller Wrapper",
     url = "https://github.com/AllenInstitute/pytic",
