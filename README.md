@@ -54,7 +54,7 @@ PyTic_Protocol        [Module]
 ### PyTic Protocol (C-Constants Dictionary)
 <a name="pytic_protocol"></a>
 
-The __Pololu Tic C-API__ uses `CAPS_DEFINED_CONSTANTS` for setting many of its parameters that represent an integer value. These contants set parameters such as pin function, step mode, etc. The `PyTic` package auto-imports these values from the [tic_protocol.h][tic_protocol_h] header file and stores them in a Python dictionary named `tic_constants` in the `pytic_protocol` module. See [Using Settings](#using_settings) in the (Example Code](#example_code) section to see how to use this dictionary in contect.
+The __Pololu Tic C-API__ uses `CAPS_DEFINED_CONSTANTS` for setting many of its parameters that represent an integer value. These contants set parameters such as pin function, step mode, etc. The `PyTic` package auto-imports these values from the [tic_protocol.h][tic_protocol_h] header file and stores them in a Python dictionary named `tic_constants` in the `pytic_protocol` module. See [Using Settings](#using_settings) in the [Example Code](#example_code) section to see how to use this dictionary in contect.
 
 ### Error Handling
 
@@ -65,7 +65,7 @@ All __Pololu Tic C-API__ functions when dynamically imported into `PyTic` are wr
 ## Example Code
 <a name="example_code"></a>
 
-Outlined in this section are several examples of how to use `PyTic` to control a __Pololu Tic Stepper Driver__. The objective of this section is to show the `PyTic` syntax used to implment the __Pololu Tic Stepper Driver C-API__ as opposed to detail each of the available functions. For a full list of commands, settings, and variable information please refer to either the [Pololu Tic Manual][pololu_tic_manual], the [Pololu Tic C-API][tic_h], or this package's source code.
+Outlined in this section are several examples of how to use `PyTic` to control a __Pololu Tic Stepper Driver__. The objective of this section is to show the `PyTic` syntax used to implement the __Pololu Tic Stepper Driver C-API__ as opposed to detail each of the available functions. For a full list of commands, settings, and variable information please refer to either the [Pololu Tic Manual][pololu_tic_manual], the [Pololu Tic C-API][tic_h], or this package's source code.
 
 ### Simple Program
 <a name="simple_program"></a>
