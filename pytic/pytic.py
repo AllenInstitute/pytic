@@ -7,6 +7,7 @@ from .pytic_protocol import tic_constant as tc
 from .pytic_structures import *
 from functools import wraps, partial
 import logging
+import platform
 
 # [T]ic [E]rror [D]ecoder
 def TED(func):
@@ -77,8 +78,14 @@ class PyTic(object):
         # Driver Locations (x64)
         file_path = os.path.dirname(os.path.abspath(__file__))
         #file_path = file_path[:-len('pytic')]
-        self.usblib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libusbp-1.dll")
-        self.ticlib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libpololu-tic-1.dll")
+        if platform.system() == 'Windows':
+            # Windows DLL paths
+            self.usblib = windll.LoadLibrary(file_path + "\\drivers\\x64\\libusbp-1.dll")
+            self.ticlib = windll.LoadLibrary(file_path + "\\drivers\\x64\\libpololu-tic-1.dll")
+        elif platform.system() == 'Linux':
+            # Linux shared library paths
+            self.usblib = CDLL(file_path + "/drivers/linux/libusbp-1.so")
+            self.ticlib = CDLL(file_path + "/drivers/linux/libpololu-tic-1.so")
 
     def _create_tic_command_attributes(self):
         for c in self._commands:
