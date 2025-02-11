@@ -75,7 +75,11 @@ class tic_settings(Structure):
                 ('max_speed', c_uint32),
                 ('max_decel', c_uint32),
                 ('max_accel', c_uint32),
-                ('invert_motor_direction', c_bool)]
+                ('invert_motor_direction', c_bool),
+                ('auto_homing', c_bool),
+                ('auto_homing_forward', c_bool),
+                ('homing_speed_towards', c_uint32),
+                ('homing_speed_away', c_uint32)]
 
 class pin_info(Structure):
     _fields_ = [('analog_reading', c_uint16),
@@ -112,7 +116,8 @@ class tic_variables(Structure):
                 ('input_after_averaging', c_uint16),
                 ('input_after_hysteresis', c_uint16),
                 ('input_after_scaling', c_int32),
-                ('pin_info', pin_info * t_const['TIC_CONTROL_PIN_COUNT'])]
+                ('pin_info', pin_info * t_const['TIC_CONTROL_PIN_COUNT']),
+                ('homing_active', c_bool)]
 
 class tic_error(Structure):
     _fields_ = [('do_not_free', c_bool),

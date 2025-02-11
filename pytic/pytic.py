@@ -49,7 +49,8 @@ class PyTic(object):
                           ('set_step_mode', c_uint8),
                           ('set_current_limit', c_uint32),
                           ('set_current_limit_code', c_uint8),
-                          ('set_decay_mode', c_uint8)]
+                          ('set_decay_mode', c_uint8),
+                          ('go_home', c_uint8)]
         self._create_tic_command_attributes()
 
     def _initialize_logger(self):

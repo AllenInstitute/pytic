@@ -11,6 +11,7 @@ tic_settings:
   step_mode: TIC_STEP_MODE_MICROSTEP16 
   current_limit: 640 # mA (see table in Pololu manual for acceptable values)
   decay_mode: TIC_DECAY_MODE_T825_FAST 
+  homing_speed_towards: 180000000 
   pin_settings:
     - pin_num: TIC_PIN_NUM_RX
       func: TIC_PIN_FUNC_USER_INPUT
