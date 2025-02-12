@@ -10,7 +10,7 @@ serial_nums = tic.list_connected_device_serial_numbers()
 tic.connect_to_serial_number(serial_nums[0])
 
 # Load configuration file and apply settings
-tic.settings.load_config('path\\to\\config.yml')
+tic.settings.load_config('config/config.yml')
 tic.settings.apply()                             
 
 # - Motion Command Sequence ----------------------------------
