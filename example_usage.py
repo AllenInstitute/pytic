@@ -11,7 +11,8 @@ tic.connect_to_serial_number(serial_nums[0])
 
 # Load configuration file and apply settings
 tic.settings.load_config('config/config.yml')
-tic.settings.apply()                             
+tic.settings.apply()
+tic.settings.print_settings()
 
 # - Motion Command Sequence ----------------------------------
 
@@ -22,7 +23,11 @@ tic.halt_and_set_position(0)
 tic.energize()
 tic.exit_safe_start()
 
-tic.go_home(0)
+# Homing example
+tic.go_home(1)
+# Wait for homing to end
+while tic.variables.homing_active:
+  sleep(0.1)
 
 # Move to listed positions
 positions = [1000, 2000, 3000, 0]
