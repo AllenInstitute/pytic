@@ -303,6 +303,7 @@ class PyTic_Settings(object):
     @TED
     def _settings_to_string(self):
         settings_str = c_char_p()
+        self._pull_device_settings()
         e_p = self.ticlib.tic_settings_to_string(byref(self._device_settings), byref(settings_str))
         self._logger.info(f"Device settings:\n{settings_str.value.decode()}")
         return e_p
