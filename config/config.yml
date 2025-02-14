@@ -2,7 +2,7 @@ tic_settings:
   product: TIC_PRODUCT_T825
   auto_clear_driver_error: True
   ignore_err_line_high: True
-  serial_crc_enabled: False
+  serial_crc_for_commands: False
   command_timeout: 0
   max_speed: 180000000                # pulses/s * 10^-4
   starting_speed: 0                   # pulses/s * 10^-4
