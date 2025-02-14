@@ -1,8 +1,6 @@
-import sys
 import os
 import yaml
 from ctypes import *
-from time import sleep
 from .pytic_protocol import tic_constant as tc
 from .pytic_structures import *
 from functools import wraps, partial
@@ -301,6 +299,16 @@ class PyTic_Settings(object):
     def _reinitialize(self):
         e_p = self.ticlib.tic_reinitialize(byref(self._device_handle))
         return e_p
+            
+    @TED
+    def _settings_to_string(self):
+        settings_str = c_char_p()
+        e_p = self.ticlib.tic_settings_to_string(byref(self._device_settings), byref(settings_str))
+        self._logger.info(f"Device settings:\n{settings_str.value.decode()}")
+        return e_p
+    
+    def print_settings(self):
+        self._settings_to_string()
 
     def load_config(self, config_file):
         with open(config_file, 'r') as ymlfile:
