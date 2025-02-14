@@ -35,6 +35,7 @@ class PyTic(object):
                           ('set_target_velocity', c_int32),
                           ('halt_and_set_position', c_int32),
                           ('halt_and_hold', None),
+                          ('go_home', c_uint8),
                           ('reset_command_timeout', None),
                           ('deenergize', None),
                           ('energize', None),
@@ -50,7 +51,10 @@ class PyTic(object):
                           ('set_current_limit', c_uint32),
                           ('set_current_limit_code', c_uint8),
                           ('set_decay_mode', c_uint8),
-                          ('go_home', c_uint8)]
+                          ('set_agc_mode', c_uint8),
+                          ('set_agc_bottom_current_limit', c_uint8),
+                          ('set_agc_current_boost_steps', c_uint8),
+                          ('set_agc_frequency_limit', c_uint8)]
         self._create_tic_command_attributes()
 
     def _initialize_logger(self):
