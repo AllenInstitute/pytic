@@ -1,12 +1,11 @@
-import sys
 import os
 import yaml
 from ctypes import *
-from time import sleep
 from .pytic_protocol import tic_constant as tc
 from .pytic_structures import *
 from functools import wraps, partial
 import logging
+import platform
 
 # [T]ic [E]rror [D]ecoder
 def TED(func):
@@ -34,6 +33,7 @@ class PyTic(object):
                           ('set_target_velocity', c_int32),
                           ('halt_and_set_position', c_int32),
                           ('halt_and_hold', None),
+                          ('go_home', c_uint8),
                           ('reset_command_timeout', None),
                           ('deenergize', None),
                           ('energize', None),
@@ -48,7 +48,11 @@ class PyTic(object):
                           ('set_step_mode', c_uint8),
                           ('set_current_limit', c_uint32),
                           ('set_current_limit_code', c_uint8),
-                          ('set_decay_mode', c_uint8)]
+                          ('set_decay_mode', c_uint8),
+                          ('set_agc_mode', c_uint8),
+                          ('set_agc_bottom_current_limit', c_uint8),
+                          ('set_agc_current_boost_steps', c_uint8),
+                          ('set_agc_frequency_limit', c_uint8)]
         self._create_tic_command_attributes()
 
     def _initialize_logger(self):
@@ -77,8 +81,14 @@ class PyTic(object):
         # Driver Locations (x64)
         file_path = os.path.dirname(os.path.abspath(__file__))
         #file_path = file_path[:-len('pytic')]
-        self.usblib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libusbp-1.dll")
-        self.ticlib = windll.LoadLibrary(file_path+"\\drivers\\x64\\libpololu-tic-1.dll")
+        if platform.system() == 'Windows':
+            # Windows DLL paths
+            self.usblib = windll.LoadLibrary(file_path + "\\drivers\\x64\\libusbp-1.dll")
+            self.ticlib = windll.LoadLibrary(file_path + "\\drivers\\x64\\libpololu-tic-1.dll")
+        elif platform.system() == 'Linux':
+            # Linux shared library paths
+            self.usblib = CDLL(file_path + "/drivers/linux/libusbp-1.so")
+            self.ticlib = CDLL(file_path + "/drivers/linux/libpololu-tic-1.so")
 
     def _create_tic_command_attributes(self):
         for c in self._commands:
@@ -289,10 +299,21 @@ class PyTic_Settings(object):
     def _reinitialize(self):
         e_p = self.ticlib.tic_reinitialize(byref(self._device_handle))
         return e_p
+            
+    @TED
+    def _settings_to_string(self):
+        settings_str = c_char_p()
+        self._pull_device_settings()
+        e_p = self.ticlib.tic_settings_to_string(byref(self._device_settings), byref(settings_str))
+        self._logger.info(f"Device settings:\n{settings_str.value.decode()}")
+        return e_p
+    
+    def print_settings(self):
+        self._settings_to_string()
 
     def load_config(self, config_file):
         with open(config_file, 'r') as ymlfile:
-            cfg = yaml.load(ymlfile)
+            cfg = yaml.safe_load(ymlfile)
 
         cfg_settings = cfg['tic_settings']
 

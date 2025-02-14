@@ -2,7 +2,7 @@ tic_settings:
   product: TIC_PRODUCT_T825
   auto_clear_driver_error: True
   ignore_err_line_high: True
-  serial_crc_enabled: False
+  serial_crc_for_commands: False
   command_timeout: 0
   max_speed: 180000000                # pulses/s * 10^-4
   starting_speed: 0                   # pulses/s * 10^-4
@@ -11,6 +11,7 @@ tic_settings:
   step_mode: TIC_STEP_MODE_MICROSTEP16 
   current_limit: 640 # mA (see table in Pololu manual for acceptable values)
   decay_mode: TIC_DECAY_MODE_T825_FAST 
+  homing_speed_towards: 180000000 
   pin_settings:
     - pin_num: TIC_PIN_NUM_RX
       func: TIC_PIN_FUNC_USER_INPUT

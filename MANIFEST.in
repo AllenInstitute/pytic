@@ -1,5 +1,6 @@
 include pytic/drivers/x64/*.dll
 include pytic/drivers/x64/*.lib
+include pytic/drivers/linux/*.so
 include config/*.yml
 include README.md
 include CONTRIBUTING.md
