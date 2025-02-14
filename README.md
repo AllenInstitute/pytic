@@ -62,6 +62,18 @@ All __Pololu Tic C-API__ functions when dynamically imported into `PyTic` are wr
 
 ---
 
+## Upgrading from version 0.0 to 1.0
+
+### Breaking Changes in Settings
+
+When upgrading to the new version, you'll need to update the following settings in your configuration:
+
+**Serial CRC Settings**: 
+  - The `serial_crc_enabled` setting has been renamed to `serial_crc_for_commands`
+  - A new setting has been inplemented to `serial_crc_for_responses` although it does not replace any previous commands.
+
+Make sure to update your configuration files accordingly when upgrading to maintain proper functionality.
+
 ## Example Code
 <a name="example_code"></a>
 
