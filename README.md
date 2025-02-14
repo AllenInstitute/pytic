@@ -1,5 +1,5 @@
 <!-- PyTic Readme -->
-# PyTic v0.0.4   
+# PyTic v1.0.0   
 
 ![pololu tic](images/pololu_tic.png)
 
@@ -70,7 +70,7 @@ Outlined in this section are several examples of how to use `PyTic` to control a
 ### Simple Program
 <a name="simple_program"></a>
 
-The simple program below demonstrates how to connect to a __Pololu Tic Stepper Driver__ device over USB and move to several positions after the previous position has been reached.
+The simple program below demonstrates how to connect to a __Pololu Tic Stepper Driver__ device over USB, home it (only viable if there any active limit switches) and move to several positions after the previous position has been reached.
 
 ```python
 import pytic
@@ -85,8 +85,9 @@ serial_nums = tic.list_connected_device_serial_numbers()
 tic.connect_to_serial_number(serial_nums[0])
 
 # Load configuration file and apply settings
-tic.settings.load_config('path\\to\\config.yml')
-tic.settings.apply()                             
+tic.settings.load_config('config/config.yml')
+tic.settings.apply()
+tic.settings.print_settings()
 
 # - Motion Command Sequence ----------------------------------
 
@@ -96,6 +97,12 @@ tic.halt_and_set_position(0)
 # Energize Motor
 tic.energize()
 tic.exit_safe_start()
+
+# Homing example
+tic.go_home(1)
+# Wait for homing to end
+while tic.variables.homing_active:
+  sleep(0.1)
 
 # Move to listed positions
 positions = [1000, 2000, 3000, 0]
@@ -115,7 +122,7 @@ print(tic.variables.error_status)
 ### Using Settings
 <a name="using_settings"></a>
 
-The `PyTic.settings` structure interface object is used to alter device settings stored in non-volitile memory. As detailed above in [PyTic Protocol](#pytic_protocol), some of these settings have enumerated constants to maintain a user-friendly interaction. The code sample below demonstrates how to interact with `PyTic.settings` using the `tic_constant` dictionary. To avoid unnecissary writes to non-volitile memory, the `PyTic.settings.apply()` function must be called for the new settings to take effect.
+The `PyTic.settings` structure interface object is used to alter device settings stored in non-volitile memory. As detailed above in [PyTic Protocol](#pytic_protocol), some of these settings have enumerated constants to maintain a user-friendly interaction. The code sample below demonstrates how to interact with `PyTic.settings` using the `tic_constant` dictionary. To avoid unnecissary writes to non-volitile memory, the `PyTic.settings.apply()` function must be called for the new settings to take effect. To check if settings have been written properly to the driver, `PyTic.settings.print_settings()` can be called to pull them from the driver and print them to the terminal.
 
 ```python
 
@@ -164,7 +171,7 @@ tic_settings:                             # required header for load_config fcn.
   product: TIC_PRODUCT_T825    
   auto_clear_driver_error: True           # ** These 4 settings         **
   ignore_err_line_high: True              # ** were experimentally      **
-  serial_crc_enabled: False               # ** determined to stabalize  **
+  serial_crc_for_commands: False          # ** determined to stabilize  **
   command_timeout: 0                      # ** device performance       **
   max_speed: 180000000                    # pulses/s * 10^-4
   starting_speed: 0                       # pulses/s * 10^-4
@@ -178,8 +185,8 @@ tic_settings:                             # required header for load_config fcn.
       func: TIC_PIN_FUNC_USER_INPUT
       pullup: True
       analog: False
-    # - pin_id: TIC_PIN_NUM_TX          # ... modifying a 2nd pin ...
-    #   func: TIC_PIN_FUNC_USER_INPUT
+    # - pin_id: TIC_PIN_NUM_RC          # ... modifying a 2nd pin ...
+    #   func: TIC_PIN_FUNC_LIMIT_SWITCH_FORWARD
     #   polarity: True
     #   analog: False
 ```
