@@ -292,7 +292,10 @@ class PyTic_Settings(object):
 
     def load_config(self, config_file):
         with open(config_file, 'r') as ymlfile:
-            cfg = yaml.load(ymlfile)
+            if yaml.__version__.split('.')[:2] < ['5', '1']:
+                cfg = yaml.load(ymlfile)
+            else:
+                cfg = yaml.load(ymlfile, yaml.SafeLoader)
 
         cfg_settings = cfg['tic_settings']
 
