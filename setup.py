@@ -22,7 +22,7 @@ with open('README.md') as f:
 
 setup(
     name = "PyTic",
-    version = "0.0.4",
+    version = "0.0.5",
     author = "Daniel Castelli",
     author_email = "danc@alleninstitute.org",
     description = "An object-oriented Python wrapper for Pololu Tic Stepper Controllers.",
